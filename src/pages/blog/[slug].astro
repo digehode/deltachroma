@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import TableOfContents from '../../components/TableOfContents.astro';
+import { paths } from '../../consts';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
@@ -19,7 +20,7 @@ const { Content, headings } = await post.render();
   <div class="post-layout">
     <article class="blog-post">
       <header class="post-header" id="top">
-        <a href="/blog" class="back-link">&larr; Back to all posts</a>
+        <a href={paths.blog} class="back-link">&larr; Back to all posts</a>
         <h1>{post.data.title}</h1>
         <time datetime={post.data.pubDate.toISOString()}>
           {post.data.pubDate.toLocaleDateString('en-US', {

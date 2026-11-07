@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://deltachroma.dev', // Update with your GitHub Pages URL if needed
+  site: 'https://digehode.github.io',
+  base: '/deltachroma',
   output: 'static',
 });

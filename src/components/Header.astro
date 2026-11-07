@@ -1,16 +1,17 @@
 ---
 // Header Navigation Component
+import { paths } from '../consts';
 ---
 <header class="site-header">
   <div class="header-container">
-    <a href="/" class="logo">
+    <a href={paths.home} class="logo">
       <span class="logo-symbol">ΔC</span>
       <span class="logo-text">DeltaChroma</span>
     </a>
     <nav class="nav-links">
-      <a href="/">Tool</a>
+      <a href={paths.home}>Tool</a>
       <a href="/about">About</a>
-      <a href="/blog">Blog</a>
+      <a href={paths.blog}>Blog</a>
     </nav>
   </div>
 </header>
