@@ -26,6 +26,9 @@ jobs:
       - name: Run Linter & Formatter (Biome)
         run: npx @biomejs/biome ci .
 
+      - name: Sync Astro types
+        run: npx astro sync
+
       - name: Run Type Check
         run: npx tsc --noEmit
 

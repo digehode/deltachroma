@@ -1,0 +1,87 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Fetch all blog posts and sort them by date (newest first)
+const posts = await getCollection('blog');
+const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="Blog" description="Development logs and architectural notes for DeltaChroma.">
+  <div class="blog-container">
+    <h1>Development Blog</h1>
+    <p class="subtitle">Notes on OKLCH math, accessibility optimization, and building DeltaChroma.</p>
+
+    <div class="post-list">
+      {sortedPosts.map((post) => (
+        <article class="post-card">
+          <h2>
+            <a href={`/blog/${post.slug}`}>{post.data.title}</a>
+          </h2>
+          <time datetime={post.data.pubDate.toISOString()}>
+            {post.data.pubDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+          <p>{post.data.description}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 0;
+  }
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    margin-bottom: 3rem;
+  }
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .post-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .post-card:hover {
+    border-color: var(--accent-primary);
+  }
+  .post-card h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+  }
+  .post-card h2 a {
+    color: var(--text-main);
+    text-decoration: none;
+  }
+  .post-card h2 a:hover {
+    color: var(--accent-primary);
+  }
+  time {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+  .post-card p {
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+</style>
