@@ -1,0 +1,26 @@
+{
+  "name": "deltachroma",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "astro check",
+    "format:fix": "biome check --write --unsafe ."
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "@biomejs/biome": "1.9.4",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
