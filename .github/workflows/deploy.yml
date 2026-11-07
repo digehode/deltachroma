@@ -44,7 +44,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.output.url }}
+      url: ${{ steps.deployment.outputs.url }}
       
     steps:
       - name: Checkout Repository
