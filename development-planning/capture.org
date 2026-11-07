@@ -1,0 +1,4 @@
+* Capture 
+General dumping ground until things are filtered into plans
+
+ - https://github.com/actions/starter-workflows/blob/main/pages/astro.yml - update our build based on best practices and examples here?
