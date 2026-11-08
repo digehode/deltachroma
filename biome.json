@@ -7,7 +7,9 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["dist/**", ".astro/**", "node_modules/**"]
+    "ignore": ["dist/**", ".astro/**", "node_modules/**"],
+
+    "include": ["src/**/*.ts", "src/**/*.astro"]
   },
   "formatter": {
     "enabled": true,
@@ -25,5 +27,16 @@
     "formatter": {
       "quoteStyle": "single"
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["**/*.md"],
+      "formatter": {
+        "enabled": true
+      },
+      "linter": {
+        "enabled": true
+      }
+    }
+  ]
 }
