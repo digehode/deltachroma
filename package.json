@@ -12,15 +12,24 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "astro check",
-    "format:fix": "biome check --write --unsafe ."
+    "format:fix": "biome check --write --unsafe .",
+    "lint:markdown": "markdownlint . --config .markdownlint.jsonc"
   },
   "dependencies": {
-    "astro": "^5.0.0"
+    "astro": "^7.4.7"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.0",
     "@biomejs/biome": "1.9.4",
+    "markdownlint-cli": "^0.50.0",
     "typescript": "^5.7.0",
-    "vitest": "^2.1.0"
+    "vitest": "^5.1.0"
+  },
+  "allowScripts": {
+    "@biomejs/biome@1.9.4": true,
+    "esbuild@0.27.7": true,
+    "esbuild@0.21.5": true,
+    "esbuild@0.25.12": true,
+    "sharp@0.34.5": true
   }
 }

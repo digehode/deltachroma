@@ -9,7 +9,7 @@
     "ignoreUnknown": false,
     "ignore": ["dist/**", ".astro/**", "node_modules/**"],
 
-    "include": ["src/**/*.ts", "src/**/*.astro"]
+    "include": ["src/**/*.ts", "src/**/*.astro", "*.json", "*.jsonc"]
   },
   "formatter": {
     "enabled": true,

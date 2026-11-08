@@ -4,8 +4,6 @@ description: 'Kicking off development on the colour palette generator.'
 pubDate: 2026-11-01
 ---
 
-# Beginning DeltaChroma
-
 Welcome to the development log for **DeltaChroma**.
 
 DeltaChrome is built to solve a particular need that I have.  During
@@ -42,7 +40,6 @@ DeltaChroma. I'm pretty sure, subconsciously, I didn't want to find
 anything perfect because it would have negated the need for tackling
 an interesting problem with code.
 
-
 ## Useful Things I Found
 
 Here are some really useful resources. This project doesn't seek to
@@ -70,7 +67,7 @@ What I couldn't find was something that would give me:
 3. ... while looking at least somewhat in-keeping with the brand colours...
 4. ... also having appropriate contrast against their background ...
 5. ... having a light and dark variant that were reasonably related to each other  ...
-4. ... and being easy to use to look back and forth from a chart to a legend.
+6. ... and being easy to use to look back and forth from a chart to a legend.
 
 Parts of the problem were solved by different tools.  IWantHue was
 closest to the tool I imagined needing, but it does generate some
@@ -93,7 +90,6 @@ choose palettes, but I really wanted something that would generate
 them with key constraints.  Others suggested very good palettes but
 they were either too poor contrast for my light/dark schemes or have
 only a limited number.
-
 
 ## The Goal of DeltaChroma
 

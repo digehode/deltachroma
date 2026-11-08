@@ -1,9 +1,9 @@
 pre-commit:
   commands:
     1-lint:
-      glob: "*.{js,ts,jsx,tsx,json,astro}"
+      glob: "*.{js,ts,jsx,tsx,json,astro,json,jsonc}"
       run: npx @biomejs/biome check --staged {staged_files}
-    2-test:
+    2-lint-docs:
+      run: npm run lint:markdown
+    3-test:
       run: npm run test
-
-# npx @biomejs/biome check --write --no-errors-on-unmatched {staged_files}
