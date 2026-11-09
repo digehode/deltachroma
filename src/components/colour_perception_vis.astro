@@ -1,0 +1,305 @@
+<div class="app-container">
+  <div class="card-panel">
+    {/* Header */}
+    <div>
+      <h1 class="text-gradient">
+        Color Distance Visualizer
+      </h1>
+      <p>
+        Comparing RGB Euclidean Distance vs. human-perceived Delta E (&Delta;E76) and Delta E (&Delta;E<sub>OK</sub>) distance.
+      </p>
+    </div>
+
+    {/* Color Controls Section */}
+    <div class="grid-two-cols">
+      {/* Color A Box */}
+      <div class="color-control-box">
+        <div>
+          <h2>Color A</h2>
+          <span id="hex-a" class="fixed-data">#820000</span>
+        </div>
+        <div id="swatch-a" class="swatch"></div>
+        <div class="range-slider-group">
+          <div>
+            <div class="slide-header"><span class="red-label">Red (R)</span><span id="val-r1">130</span></div>
+            <input type="range" id="r1" min="0" max="255" value="130" class="colour-slider">
+          </div>
+          <div>
+            <div class="slide-header"><span class="green-label">Green (G)</span><span id="val-g1">0</span></div>
+            <input type="range" id="g1" min="0" max="255" value="0" class="colour-slider">
+          </div>
+          <div>
+            <div class="slide-header"><span class="blue-label">Blue (B)</span><span id="val-b1">0</span></div>
+            <input type="range" id="b1" min="0" max="255" value="0" class="colour-slider">
+          </div>
+        </div>
+      </div>
+
+      {/* Color B Box */}
+      <div class="color-control-box">
+        <div>
+          <h2>Color B</h2>
+          <span id="hex-b" class="fixed-data">#2A00E8</span>
+        </div>
+        <div id="swatch-b" class="swatch"></div>
+        <div class="range-slider-group">
+          <div>
+            <div class="slide-header"><span class="red-label">Red (R)</span><span id="val-r2">42</span></div>
+            <input type="range" id="r2" min="0" max="255" value="42" class="colour-slider">
+          </div>
+          <div>
+            <div class="slide-header"><span class="green-label">Green (G)</span><span id="val-g2">0</span></div>
+            <input type="range" id="g2" min="0" max="255" value="0" class="colour-slider">
+          </div>
+          <div>
+            <div class="slide-header"><span class="blue-label">Blue (B)</span><span id="val-b2">232</span></div>
+            <input type="range" id="b2" min="0" max="255" value="232" class="colour-slider">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Canvas Visualizer Section */}
+    <div class="color-control-box">
+      <h3>Distance Metrics Comparison</h3>
+      
+      {/* HTML5 Canvas */}
+      <div class="demo-canvas-wrapper">
+        <canvas id="visualizerCanvas" class="max-canvas" aria-label="Color distance comparison chart"></canvas>
+      </div>
+
+      <div>
+        <div class="color-control-box">
+          <div>
+            <div class="fg-blue">RGB Euclidean</div>
+            <div>Max possible: 441.67</div>
+          </div>
+          <span id="num-rgb-val" class="fg-blue">0.00</span>
+        </div>
+        <div class="color-control-box">
+          <div>
+            <div class="fg-green">Perceptual (&Delta;E76)</div>
+            <div>Max possible: 100.00</div>
+          </div>
+          <span id="num-delta-val" class="fg-green">0.00</span>
+        </div>
+        <div class="color-control-box">
+          <div>
+            <div class="fg-red">Perceptual (&Delta;E<sub>OK</sub>)</div>
+            <div>Max possible: 1.00</div>
+          </div>
+          <span id="num-ok-val" class="fg-red">0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Helper: Linearize sRGB
+  function srgbToLinear(c: number) {
+    let v = c / 255;
+    return v > 0.04045 ? Math.pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
+  }
+
+  // Helper: RGB to XYZ (standard D65)
+  function rgbToXyz(r: number, g: number, b: number) {
+    let sR = srgbToLinear(r);
+    let sG = srgbToLinear(g);
+    let sB = srgbToLinear(b);
+    
+    return {
+      x: (sR * 0.4124 + sG * 0.3576 + sB * 0.1805) * 100,
+      y: (sR * 0.2126 + sG * 0.7152 + sB * 0.0722) * 100,
+      z: (sR * 0.0193 + sG * 0.1192 + sB * 0.9505) * 100
+    };
+  }
+
+  // Helper: XYZ to CIELAB
+  function xyzToLab(x: number, y: number, z: number) {
+    let rX = x / 95.047, rY = y / 100.0, rZ = z / 108.883;
+
+    rX = rX > 0.008856 ? Math.pow(rX, 1/3) : (7.787 * rX) + (16 / 116);
+    rY = rY > 0.008856 ? Math.pow(rY, 1/3) : (7.787 * rY) + (16 / 116);
+    rZ = rZ > 0.008856 ? Math.pow(rZ, 1/3) : (7.787 * rZ) + (16 / 116);
+
+    return {
+      l: (116 * rY) - 16,
+      a: 500 * (rX - rY),
+      b: 200 * (rY - rZ)
+    };
+  }
+
+  // Helper: RGB to Oklab (Björn Ottosson's model)
+  function rgbToOklab(r: number, g: number, b: number) {
+    let lr = srgbToLinear(r);
+    let lg = srgbToLinear(g);
+    let lb = srgbToLinear(b);
+
+    let l_ = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
+    let m_ = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
+    let s_ = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+
+    return {
+      l: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+      a: 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+      b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+    };
+  }
+
+  function componentToHex(c: number) {
+    const hex = c.toString(16).toUpperCase();
+    return hex.length === 1 ? "0" + hex : hex;
+  }
+
+  function rgbToHex(r: number, g: number, b: number) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  }
+  
+  function cssVar(name, fallback = '') {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
+  function drawCharts(euclidean: number, deltaE: number, deltaEOk: number) {
+    const canvas = document.getElementById('visualizerCanvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Handle high DPI displays
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    const width = rect.width;
+    const height = rect.height;
+
+    // Clear Canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Percentages relative to absolute max boundaries
+    // Max Euclidean ~441.67, Max CIE76 ~100, Max practical Delta E_OK ~0.4 to 0.5 (scaling relative to ~0.5 max visual gamut span or 1.0 theoretical)
+    const rgbPct = Math.min(euclidean / 441.67, 1);
+    const deltaPct = Math.min(deltaE / 100.0, 1);
+    const deltaOkPct = Math.min(deltaEOk / 0.5, 1); // 0.5 covers standard full-gamut extremes
+
+    const barHeight = 20;
+    const barMaxW = width - 200; 
+    const startX = 140;
+
+    // 1. Draw RGB Euclidean Bar
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.font = '600 12px sans-serif';
+    ctx.fillText('RGB Euclidean', 10, 32);
+
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.fillRect(startX, 18, barMaxW, barHeight);
+    
+    ctx.fillStyle = cssVar("--color-blue-invert", "#818cf8");
+    if (barMaxW * rgbPct > 0) {
+      ctx.fillRect(startX + 2, 20, (barMaxW * rgbPct) - 4, barHeight - 4);
+    }
+
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.font = '12px monospace';
+    ctx.fillText(`${(rgbPct * 100).toFixed(1)}%`, startX + barMaxW + 10, 32);
+
+
+    // 2. Draw Perceptual DeltaE (CIE76) Bar
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.font = '600 12px sans-serif';
+    ctx.fillText('Perceptual (ΔE76)', 10, 72);
+
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.fillRect(startX, 58, barMaxW, barHeight);
+    
+    ctx.fillStyle = cssVar("--color-green-invert", "#34d399");
+    if (barMaxW * deltaPct > 0) {
+      ctx.fillRect(startX + 2, 60, (barMaxW * deltaPct) - 4, barHeight - 4);
+    }
+
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.font = '12px monospace';
+    ctx.fillText(`${(deltaPct * 100).toFixed(1)}%`, startX + barMaxW + 10, 72);
+
+
+    // 3. Draw Perceptual Delta E_OK Bar
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.font = '600 12px sans-serif';
+    ctx.fillText('Perceptual (ΔEOK)', 10, 112);
+
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.fillRect(startX, 98, barMaxW, barHeight);
+    
+    ctx.fillStyle = cssVar("--color-red-invert", "#f87171");
+    if (barMaxW * deltaOkPct > 0) {
+      ctx.fillRect(startX + 2, 100, (barMaxW * deltaOkPct) - 4, barHeight - 4);
+    }
+
+    ctx.fillStyle = cssVar("--color-text", "#1e293b");
+    ctx.font = '12px monospace';
+    ctx.fillText(`${(deltaOkPct * 100).toFixed(1)}%`, startX + barMaxW + 10, 112);
+  }
+
+  function updateVisualizer() {
+    const r1 = parseInt((document.getElementById('r1') as HTMLInputElement).value);
+    const g1 = parseInt((document.getElementById('g1') as HTMLInputElement).value);
+    const b1 = parseInt((document.getElementById('b1') as HTMLInputElement).value);
+    
+    const r2 = parseInt((document.getElementById('r2') as HTMLInputElement).value);
+    const g2 = parseInt((document.getElementById('g2') as HTMLInputElement).value);
+    const b2 = parseInt((document.getElementById('b2') as HTMLInputElement).value);
+
+    // Update Label UI Numerical Text values
+    document.getElementById('val-r1')!.textContent = r1.toString();
+    document.getElementById('val-g1')!.textContent = g1.toString();
+    document.getElementById('val-b1')!.textContent = b1.toString();
+    document.getElementById('val-r2')!.textContent = r2.toString();
+    document.getElementById('val-g2')!.textContent = g2.toString();
+    document.getElementById('val-b2')!.textContent = b2.toString();
+
+    // Update Swatches & Hex values
+    document.getElementById('hex-a')!.textContent = rgbToHex(r1, g1, b1);
+    document.getElementById('hex-b')!.textContent = rgbToHex(r2, g2, b2);
+    document.getElementById('swatch-a')!.style.backgroundColor = `rgb(${r1},${g1},${b1})`;
+    document.getElementById('swatch-b')!.style.backgroundColor = `rgb(${r2},${g2},${b2})`;
+
+    // Calculate Euclidean Distance
+    const euclidean = Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
+    document.getElementById('num-rgb-val')!.textContent = euclidean.toFixed(2);
+
+    // Calculate Delta E 76
+    const xyz1 = rgbToXyz(r1, g1, b1);
+    const lab1 = xyzToLab(xyz1.x, xyz1.y, xyz1.z);
+    
+    const xyz2 = rgbToXyz(r2, g2, b2);
+    const lab2 = xyzToLab(xyz2.x, xyz2.y, xyz2.z);
+
+    const deltaE = Math.sqrt(Math.pow(lab2.l - lab1.l, 2) + Math.pow(lab2.a - lab1.a, 2) + Math.pow(lab2.b - lab1.b, 2));
+    document.getElementById('num-delta-val')!.textContent = deltaE.toFixed(2);
+
+    // Calculate Delta E OK
+    const oklab1 = rgbToOklab(r1, g1, b1);
+    const oklab2 = rgbToOklab(r2, g2, b2);
+    const deltaEOk = Math.sqrt(Math.pow(oklab2.l - oklab1.l, 2) + Math.pow(oklab2.a - oklab1.a, 2) + Math.pow(oklab2.b - oklab1.b, 2));
+    document.getElementById('num-ok-val')!.textContent = deltaEOk.toFixed(3);
+
+    // Refresh rendering on canvas element
+    drawCharts(euclidean, deltaE, deltaEOk);
+  }
+
+  // Attach input event listeners
+  ['r1', 'g1', 'b1', 'r2', 'g2', 'b2'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateVisualizer);
+  });
+
+  // Watch for window resize changes to keep canvas sharp
+  window.addEventListener('resize', () => {
+    updateVisualizer();
+  });
+
+  // Run initial state calculation
+  updateVisualizer();
+</script>

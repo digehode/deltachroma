@@ -29,7 +29,7 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post);
     <article class="blog-post">
       <header class="post-header" id="top">
         <a href={paths.blog} class="back-link">&larr; Back to all posts</a>
-        <h1>{post.data.title}</h1>
+        <h1 class="text-gradient">{post.data.title}</h1>
         <time datetime={post.data.pubDate.toISOString()}>
           {post.data.pubDate.toLocaleDateString('en-GB', {
             year: 'numeric',
