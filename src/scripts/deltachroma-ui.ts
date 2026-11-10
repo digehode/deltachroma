@@ -103,7 +103,9 @@ function initSeedButtons(root: ParentNode): void {
     }
   });
 
-  // Delete button handlers: remove seed entry on click
+  // Delete button handlers: use event delegation on `root` because delete buttons
+  // are added dynamically inside seed entries after init. Direct listeners would
+  // miss them; add buttons above use direct listeners because they exist at init.
   root.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     if (target.classList.contains('btn-delete-seed')) {
