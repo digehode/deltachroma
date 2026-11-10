@@ -1,0 +1,91 @@
+---
+import '@/styles/deltachroma-app.css';
+---
+
+<div class="deltachroma-app">
+  <div class="card-panel">
+
+    <!-- Background Surfaces Section -->
+    <section class="deltachroma-section">
+      <h2>Background Surfaces</h2>
+      <div class="grid-two-cols">
+        
+        <!-- Light Mode Background Block -->
+        <div class="color-control-box">
+          <div>
+            <h3>Light Mode Background</h3>
+            <label for="light-bg-input">Background Color</label>
+          </div>
+          <div>
+            <input 
+              type="text" 
+              id="light-bg-input" 
+              class="coloris-input fixed-data" 
+              value="#ffffff" 
+              data-coloris
+            />
+          </div>
+          
+          <div id="light-swatch" class="swatch" style="background-color: #ffffff;"></div>
+
+          <div class="color-formats">
+            <div class="format-row">
+              <span class="format-label">HEX:</span>
+              <span id="light-hex" class="fixed-data">#ffffff</span>
+            </div>
+            <div class="format-row">
+              <span class="format-label">RGB:</span>
+              <span id="light-rgb" class="fixed-data">rgb(255, 255, 255)</span>
+            </div>
+            <div class="format-row">
+              <span class="format-label">OKLCH:</span>
+              <span id="light-oklch" class="fixed-data">oklch(1 0 0)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dark Mode Background Block -->
+        <div class="color-control-box">
+          <div>
+            <h3>Dark Mode Background</h3>
+            <label for="dark-bg-input">Background Color</label>
+          </div>
+          <div>
+            <input 
+              type="text" 
+              id="dark-bg-input" 
+              class="coloris-input fixed-data" 
+              value="#121212" 
+              data-coloris
+            />
+          </div>
+          
+          <div id="dark-swatch" class="swatch" style="background-color: #121212;"></div>
+
+          <div class="color-formats">
+            <div class="format-row">
+              <span class="format-label">HEX:</span>
+              <span id="dark-hex" class="fixed-data">#121212</span>
+            </div>
+            <div class="format-row">
+              <span class="format-label">RGB:</span>
+              <span id="dark-rgb" class="fixed-data">rgb(18, 18, 18)</span>
+            </div>
+            <div class="format-row">
+              <span class="format-label">OKLCH:</span>
+              <span id="dark-oklch" class="fixed-data">oklch(0.2 0 0)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Coloris Stylesheet & Script CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css"/>
+<script src="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.js"></script>
+
+<!-- Import decoupled client-side UI script -->
+<script src="../scripts/deltachroma-ui.ts"></script>
