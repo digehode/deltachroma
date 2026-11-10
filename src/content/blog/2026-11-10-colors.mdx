@@ -1,0 +1,27 @@
+---
+title: 'Colour Libraries and Tools'
+description: 'Picking a library and for working with colour and a colour-picker'
+pubDate: 2026-11-10
+---
+
+Today I made some actual progress on the tool rather than just playing with the repository and CI/CD pipeline.  Nothing big in terms of functionality (of which there is still none) but some decisions made about libraries and UI elements.
+
+## Colour Libraries
+
+Not a lot to write on this other than a decision was made to use [Color.js](https://colorjs.io/).
+
+I also considered [Colorizr](https://github.com/gilbarbara/colorizr). If the focus was more about checking contrast or creating uniform gradients, this would have been the choice, but it looks like Color.js is the better choice for the maths I need.  The accessibility and palette generation bit is what I'm building, so a lot of the benefits of Colorizr won't be as important for this project.
+
+[colordx](https://github.com/dkryaklin/colordx) was another good option, particularly for the colour perception deficiency simulation. But Colors.js has built-in $\Delta_E$ calculations that colordx doesn't.
+
+## Colour Picker
+
+This was more difficult.  There are so many, and I struggled to be able to work out which will fit what I need because so much is undecided.  How do you decide what features you need, what patterns would just not work, when you don't know what those will be yet?
+
+In the end, I went with something popular and clean, favouring accessibility over other features. I had hoped to use an OKLCH colour picker, but I couldn't find one that was small enough to be part of what will already be quite a busy interface, claimed to be accessible, etc.
+
+I hope [coloris](https://coloris.js.org/) was the right choice, but this at least is an area that can probably be redone at any point in the future with minimal disruption as long as I keep everything sensible.
+
+{/* 
+LocalWords:  pubDate colordx Colorizr Colors js Color LocalWords
+ */}

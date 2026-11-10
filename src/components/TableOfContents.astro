@@ -10,17 +10,17 @@ interface Props {
 }
 
 const { headings } = Astro.props;
-const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const _filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
-{filteredHeadings.length > 0 && (
+{_filteredHeadings.length > 0 && (
   <nav class="toc" aria-label="Table of Contents">
     <h3>On this page</h3>
     <ul>
       <li class="toc-item depth-2">
         <a href="#top" class="toc-top-link">&uarr; Top of page</a>
       </li>
-      {filteredHeadings.map((heading) => (
+      {_filteredHeadings.map((heading) => (
         <li class={`toc-item depth-${heading.depth}`}>
           <a href={`#${heading.slug}`}>{heading.text}</a>
         </li>

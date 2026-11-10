@@ -1,18 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-// Later you'll import your interactive tool here:
-// import DeltaChromaApp from '../components/DeltaChromaApp.astro';
+import DeltaChromaApp from '@/components/DeltaChromaApp.astro';
 ---
 
 <BaseLayout title="Accessible Palette Generator">
   <section class="hero">
-    <h1>Accessible Color Generator for Data Visualizations</h1>
-    <p>Generate 8-color palettes optimized for high contrast and color-vision deficiency.</p>
-    
-    <!-- Placeholder where the interactive tool will mount -->
-    <div class="tool-placeholder">
-      <p>Interactive tool canvas loading here soon...</p>
-    </div>
+    <h1 class="text-gradient">Accessible Palette Generator for Data Visualizations</h1>
+    <p>Generate palettes optimized for high contrast and color-vision deficiency.</p>
+
+  <DeltaChromaApp />
+
   </section>
 </BaseLayout>
 

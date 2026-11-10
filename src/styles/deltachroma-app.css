@@ -1,0 +1,73 @@
+/* src/styles/deltachroma-app.css */
+.deltachroma-app {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.deltachroma-section {
+  width: 100%;
+}
+
+.deltachroma-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.color-formats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: var(--color-bg);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+}
+
+.format-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.format-label {
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Ensure Coloris input container / picker triggers have a visible border */
+.clr-field {
+  display: block;
+  position: relative;
+}
+
+.coloris-input {
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+}
+
+/* Coloris widget swatch preview button inside the field */
+.clr-field input {
+  padding-left: 2.5rem; /* Make room for the color preview swatch */
+}
+
+.clr-field button {
+  position: absolute;
+  top: 50%;
+  left: 0rem;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}

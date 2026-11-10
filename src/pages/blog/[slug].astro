@@ -1,19 +1,27 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import TableOfContents from '../../components/TableOfContents.astro';
 import { paths } from '../../consts';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
-}
 
+  return posts.map((post) => {
+    // Generate a clean slug by removing the file extension from the ID
+    const slug = post.id.replace(/\.(md|mdx)$/, '');
+
+    return {
+      params: { slug },
+      props: {
+        post,
+        slug,
+      },
+    };
+  });
+}
 const { post } = Astro.props;
-const { Content, headings } = await post.render();
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
@@ -21,9 +29,9 @@ const { Content, headings } = await post.render();
     <article class="blog-post">
       <header class="post-header" id="top">
         <a href={paths.blog} class="back-link">&larr; Back to all posts</a>
-        <h1>{post.data.title}</h1>
+        <h1 class="text-gradient">{post.data.title}</h1>
         <time datetime={post.data.pubDate.toISOString()}>
-          {post.data.pubDate.toLocaleDateString('en-US', {
+          {post.data.pubDate.toLocaleDateString('en-GB', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',

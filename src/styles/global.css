@@ -4,25 +4,101 @@
 
 :root {
   /* Use system font stacks for performance and instant familiarity */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --font-sans:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    "Open Sans", "Helvetica Neue", sans-serif;
 
   /* Accessible high-contrast color palette (WCAG AAA compliant defaults) */
   --color-bg: #ffffff;
+  --color-bg-alt: #ffeeee;
   --color-text: #1a1a1a;
   --color-primary: #aa4673; /* High contrast primary */
   --color-focus: #aabf00; /* High visibility focus */
   --border-color: rgba(0, 0, 0, 0.5);
   --color-muted: #555;
+  --fg-gradient-a: rgba(100, 20, 00, 1);
+  --fg-gradient-b: rgba(00, 20, 100, 1);
+  --color-red: #660000;
+  --color-green: #006600;
+  --color-blue: #000066;
+  --color-red-invert: #ff8888;
+  --color-green-invert: #88ff88;
+  --color-blue-invert: #8888ff;
 }
 
 /* Respect user preference for dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-bg: #121212;
+    --color-bg-alt: #1a1a22;
     --color-text: #f5f5f5;
     --color-primary: #ffb299;
+    --fg-gradient-a: rgba(220, 100, 100, 1);
+    --fg-gradient-b: rgba(100, 120, 220, 1);
+    --color-red: #ff8888;
+    --color-green: #88ff88;
+    --color-blue: #8888ff;
+
+    --color-red-invert: #660000;
+    --color-green-invert: #006600;
+    --color-blue-invert: #000066;
+    --border-color: rgba(255, 255, 255, 0.2);
   }
+}
+
+.fg-red {
+  color: var(--color-red);
+}
+.fg-red-invert {
+  color: var(--color-red-invert);
+}
+.fg-green {
+  color: var(--color-green);
+}
+.fg-green-invert {
+  color: var(--color-green-invert);
+}
+.fg-blue {
+  color: var(--color-blue);
+}
+.fg-blue-invert {
+  color: var(--color-blue-invert);
+}
+
+.red-label {
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+.green-label {
+  color: var(--color-green);
+  font-weight: 600;
+}
+.blue-label {
+  color: var(--color-blue);
+  font-weight: 600;
+}
+
+.fixed-data {
+  font-family: monospace;
+  padding: 0.25rem 0.625rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  color: var(--color-text);
+}
+.slide-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+.swatch {
+  height: 4rem;
+  border-radius: 0.5rem;
+
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
 }
 
 *,
@@ -44,10 +120,7 @@ html {
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: var(--color-bg);
-  color: var(--color-text);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -222,10 +295,10 @@ svg {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 }
 
@@ -432,7 +505,9 @@ svg {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.5rem;
-  transition: border-color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .post-card:hover {
@@ -476,4 +551,219 @@ time {
   line-height: 1.5;
   position: relative;
   z-index: 2; /* Keeps text above the stretched pseudo-element link */
+}
+
+/* ==========================================================================
+   Color Visualiser & General-Purpose UI Stylesheet
+   ========================================================================== */
+
+/* Layout & Containers */
+.app-container {
+  min-height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .app-container {
+    padding: 2rem;
+  }
+}
+
+.card-panel {
+  max-width: 56rem;
+  width: 100%;
+  background-color: var(--color-bg-alt);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* TODO: extract this and make a .shadow class with light/dark colours */
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .card-panel {
+    padding: 2rem;
+  }
+}
+
+.card-panel h1 {
+  margin-top: 0.5rem;
+}
+
+/* Responsive Two-Column Grid */
+.grid-two-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .grid-two-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.max-canvas {
+  /* Canvas to fit in its wrapper */
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Color Control Sub-Boxes */
+.color-control-box {
+  background-color: var(--color-bg);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.demo-canvas-wrapper {
+  width: 100%;
+  height: 12rem;
+
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.color-control-box h2,
+.color-control-box h3 {
+  margin-top: 0.5rem;
+}
+
+.color-swatch {
+  width: 100%;
+  height: 6rem;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Accessible Range Sliders */
+.range-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.range-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.range-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+input[type="range"].colour-slider {
+  width: 100%;
+  cursor: pointer;
+}
+
+input[type="range"].colour-slider:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 9999px;
+}
+
+input[type="range"].custom-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: #334155;
+}
+
+input[type="range"].custom-slider::-webkit-slider-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #f8fafc;
+  -webkit-appearance: none;
+  margin-top: -5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"].custom-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"].custom-slider::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: #334155;
+}
+
+input[type="range"].custom-slider::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Quantitative Readout Cards */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  font-size: 0.875rem;
+  padding-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.metric-card {
+  padding: 0.75rem;
+  background-color: var(--color-bg);
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-card-rgb {
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.metric-card-delta {
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Typography & Utilities */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.text-gradient {
+  background: linear-gradient(to right, var(--fg-gradient-a), var(--fg-gradient-b));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

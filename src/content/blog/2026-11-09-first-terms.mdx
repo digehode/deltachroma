@@ -1,0 +1,25 @@
+---
+title: 'First Terms and Development'
+description: 'Defining key terms and beginning real development'
+pubDate: 2026-11-09
+---
+import ColorVisualizer from '../../components/colour_perception_vis.astro';
+
+## Delta Empfindung - $\Delta E$
+
+[Empfindung](https://collinsdictionary.com) is a German word for "feeling", "impression" or "sensation".
+
+Delta ($\Delta$) is used in maths to mean the quantitative difference or change in something.
+
+When examining how people perceive the difference between colours, $\Delta E$ is used to denote that perceived difference, where the E is from Empfindung.
+
+If we had two colours in RGB, we can work out the distance between them in that space very simply. We could use the Euclidean distance, for example: $\sqrt{(R_2-R_1)^2 + (G_2-G_1)^2 + (B_2-B_1)^2}$. We can call this $\Delta E_{rgb}$
+
+But that doesn't match the way a human might experience the difference between colours.
+
+One of the earliest methods of putting a number on the difference between colours that humans see uses the [CIELAB](https://en.wikipedia.org/wiki/CIELAB_color_space) colour space rather than RGB. This colour space was developed in 1976 in order to express colours in a way that maps to human perception. In this colour space, instead of red, green and blue, colours are expressed as values for lightness (L*), green-red (a*) and blue-yellow (b*).  You can calculate the distance in this 3D space just like for RGB: $\Delta E_{76} = \sqrt{(L^*_2-L^*_1)^2 + (a^*_2-a^*_1)^2 + (b^*_2-b^*_1)^2}$
+
+
+A more recent colour space, [Oklab](https://bottosson.github.io/posts/oklab/), is becomiong popular because it is even better at representing colours in a space where the axes match our perception.  That is, if you change the lightness parameter and nothing else, for example, then most people will percieve the colour to change only in lightness, not in hue.
+
+<ColorVisualizer />

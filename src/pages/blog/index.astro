@@ -13,10 +13,12 @@ const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDa
     <p class="subtitle">Notes on OKLCH math, accessibility optimization, and building DeltaChroma.</p>
 
     <div class="post-list">
-      {sortedPosts.map((post) => (
+      {sortedPosts.map((post) => {
+      const postSlug = post.data.slug || post.id.replace(/\.(md|mdx)$/, '');
+      return (
         <article class="post-card">
           <h2>
-	  <a href={`${paths.blog}/${post.slug}`}>{post.data.title}</a>
+	  <a href={`${paths.blog}/${postSlug}`}>{post.data.title}</a>
 	  
           </h2>
           <time datetime={post.data.pubDate.toISOString()}>
@@ -28,7 +30,8 @@ const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDa
           </time>
           <p>{post.data.description}</p>
         </article>
-      ))}
+      )}
+      )}
     </div>
   </div>
 </BaseLayout>
