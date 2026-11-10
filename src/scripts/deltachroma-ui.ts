@@ -111,6 +111,16 @@ function initSeedButtons(root: ParentNode): void {
     if (target.classList.contains('btn-delete-seed')) {
       const seedEntry = target.closest('.seed-entry');
       if (seedEntry) {
+        const entry = seedEntry as HTMLElement;
+        const index = Number(entry.dataset.seedIndex);
+        const mode = entry.dataset.mode as 'light' | 'dark';
+        if (mode === 'light' && index < lightPalette.length) {
+          lightPalette[index] = new ChromaColor('#ffffff');
+          renderPaletteOutputs(root);
+        } else if (mode === 'dark' && index < darkPalette.length) {
+          darkPalette[index] = new ChromaColor('#ffffff');
+          renderPaletteOutputs(root);
+        }
         seedEntry.remove();
       }
     }
@@ -124,10 +134,107 @@ function randomHex(): string {
     .padStart(6, '0')}`;
 }
 
+/** Palette state: one array per mode, sized to paletteSize, default white. */
+let lightPalette: ChromaColor[] = [];
+let darkPalette: ChromaColor[] = [];
+let paletteSize = 7;
+let lightSeedCount = 0;
+let darkSeedCount = 0;
+
+/** Initialise both palettes to the given size, filled with white. */
+function initPalettes(size: number): void {
+  const white = new ChromaColor('#ffffff');
+  lightPalette = Array.from({ length: size }, () => white.clone());
+  darkPalette = Array.from({ length: size }, () => white.clone());
+  lightSeedCount = 0;
+  darkSeedCount = 0;
+}
+
+/** Render paint swatches and delta E table for one mode. */
+function renderPaletteSide(root: ParentNode, mode: 'light' | 'dark', palette: ChromaColor[]): void {
+  const swatchesContainer = root.querySelector(`#${mode}-palette-swatches`) as HTMLElement;
+  const tableContainer = root.querySelector(`#${mode}-palette-table-container`) as HTMLElement;
+  if (!swatchesContainer || !tableContainer) return;
+
+  // --- Paint swatches ---
+  swatchesContainer.innerHTML = '';
+  palette.forEach((color, _index) => {
+    const swatch = document.createElement('div');
+    swatch.className = 'paint-swatch';
+    swatch.innerHTML = `
+      <div class="paint-colour-patch" style="background-color: ${color.toCss('hex')}"></div>
+      <div class="paint-colour-info">
+        <div class="paint-format-row">
+          <span class="paint-format-label">Hex:</span>
+          <span class="paint-format-value">${color.toCss('hex')}</span>
+        </div>
+        <div class="paint-format-row">
+          <span class="paint-format-label">RGB:</span>
+          <span class="paint-format-value">${color.toCss('rgb')}</span>
+        </div>
+        <div class="paint-format-row">
+          <span class="paint-format-label">OKLCH:</span>
+          <span class="paint-format-value">${color.toCss('oklch', 2)}</span>
+        </div>
+      </div>
+    `;
+    swatchesContainer.appendChild(swatch);
+  });
+
+  // --- Delta E matrix table ---
+  tableContainer.innerHTML = '';
+  const n = palette.length;
+  const table = document.createElement('table');
+  table.className = 'delta-e-table';
+
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.appendChild(document.createElement('th')); // top-left corner
+  for (let j = 0; j < n; j++) {
+    const th = document.createElement('th');
+    th.style.backgroundColor = palette[j].toCss('hex');
+    th.textContent = String(j + 1);
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (let i = 0; i < n; i++) {
+    const row = document.createElement('tr');
+    const rowLabel = document.createElement('td');
+    rowLabel.style.backgroundColor = palette[i].toCss('hex');
+    rowLabel.textContent = String(i + 1);
+    row.appendChild(rowLabel);
+    for (let j = 0; j < n; j++) {
+      const cell = document.createElement('td');
+      const deltaE = palette[i].deltaE(palette[j]);
+      cell.textContent = deltaE.toFixed(1);
+      if (i === j) cell.classList.add('delta-e-cell-zero');
+      else if (deltaE < 3) cell.classList.add('delta-e-cell-low');
+      else if (deltaE < 7.5) cell.classList.add('delta-e-cell-mid');
+      else cell.classList.add('delta-e-cell-high');
+      row.appendChild(cell);
+    }
+    tbody.appendChild(row);
+  }
+  table.appendChild(tbody);
+  tableContainer.appendChild(table);
+}
+
+/** Render both palette outputs. */
+function renderPaletteOutputs(root: ParentNode): void {
+  renderPaletteSide(root, 'light', lightPalette);
+  renderPaletteSide(root, 'dark', darkPalette);
+}
+
 /** Create a new seed entry with colour picker and displays */
 function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
+  const seedIndex = mode === 'light' ? lightSeedCount++ : darkSeedCount++;
   const seedDiv = document.createElement('div');
   seedDiv.className = 'seed-entry';
+  seedDiv.dataset.seedIndex = String(seedIndex);
+  seedDiv.dataset.mode = mode;
   seedDiv.innerHTML = `
     <div class="seed-row1">
       <div class="seed-picker-wrapper">
@@ -230,12 +337,40 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
   updateSeedDisplay();
   updateSeedContrast();
 
+  // Initialise palette slot if within range
+  if (seedIndex < paletteSize) {
+    try {
+      const color = new ChromaColor(
+        (seedDiv.querySelector('.coloris-input') as HTMLInputElement).value,
+      );
+      if (mode === 'light') lightPalette[seedIndex] = color;
+      else darkPalette[seedIndex] = color;
+    } catch {
+      // Invalid colour - leave palette as white
+    }
+  }
+
+  // Render palette outputs after all seeds are initialised
+  renderPaletteOutputs(root);
+
   // Update on seed colour change
   const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
   if (colourInput) {
     colourInput.addEventListener('input', () => {
       updateSeedDisplay();
       updateSeedContrast();
+
+      // Update palette slot if within range
+      if (seedIndex < paletteSize) {
+        try {
+          const color = new ChromaColor(colourInput.value);
+          if (mode === 'light') lightPalette[seedIndex] = color;
+          else darkPalette[seedIndex] = color;
+          renderPaletteOutputs(root);
+        } catch {
+          // Invalid colour - leave palette unchanged
+        }
+      }
     });
 
     // Update contrast when background changes too
@@ -260,6 +395,39 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
  * real document.
  */
 export function initDeltaChromaUI(root: ParentNode = document): void {
+  // Palette size slider
+  const paletteSizeInput = root.querySelector('#palette-size-input') as HTMLInputElement;
+  const paletteSizeValue = root.querySelector('#palette-size-value') as HTMLElement;
+
+  // Initialise palettes to white
+  initPalettes(paletteSize);
+
+  const updatePaletteSize = () => {
+    paletteSize = Math.max(3, Math.min(12, Number(paletteSizeInput.value)));
+    if (paletteSizeValue) paletteSizeValue.textContent = String(paletteSize);
+
+    // Re-init palettes to new size, preserving existing colours that fit
+    const white = new ChromaColor('#ffffff');
+    const oldLight = lightPalette;
+    const oldDark = darkPalette;
+    lightPalette = Array.from({ length: paletteSize }, (_, _index) =>
+      _index < oldLight.length ? oldLight[_index].clone() : white.clone(),
+    );
+    darkPalette = Array.from({ length: paletteSize }, (_, _index) =>
+      _index < oldDark.length ? oldDark[_index].clone() : white.clone(),
+    );
+    renderPaletteOutputs(root);
+  };
+
+  if (paletteSizeInput) {
+    paletteSizeInput.addEventListener('input', updatePaletteSize);
+    paletteSizeInput.addEventListener('change', updatePaletteSize);
+    updatePaletteSize();
+  }
+
+  // Render initial palette outputs
+  renderPaletteOutputs(root);
+
   for (const card of COLOR_CARDS) {
     const input = root.querySelector(`#${card.inputId}`);
     if (!(input instanceof HTMLInputElement)) {
@@ -274,4 +442,7 @@ export function initDeltaChromaUI(root: ParentNode = document): void {
 
   // Seed buttons
   initSeedButtons(root);
+
+  // Render initial palette outputs
+  renderPaletteOutputs(root);
 }

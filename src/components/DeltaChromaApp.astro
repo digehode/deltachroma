@@ -83,6 +83,26 @@ import '@/styles/deltachroma-app.css';
       </div>
     </section>
 
+    <!-- Palette Parameters Section -->
+    <section class="deltachroma-section">
+      <h2>Palette Parameters</h2>
+      <div class="parameter-control-group">
+        <div class="parameter-row">
+          <label for="palette-size-input">Target palette size:</label>
+          <input
+            type="range"
+            id="palette-size-input"
+            min="3"
+            max="12"
+            value="7"
+            class="parameter-slider"
+          />
+          <span id="palette-size-value" class="parameter-value">7</span>
+        </div>
+      </div>
+      <p class="parameter-note">Number of colours in the generated palette. Locked seeds act as fixed anchor points.</p>
+    </section>
+
     <!-- Seed Colours Section -->
     <section class="deltachroma-section">
       <h2>Seed Colours</h2>
@@ -103,6 +123,34 @@ import '@/styles/deltachroma-app.css';
             <!-- Seed inputs will be added dynamically -->
           </div>
           <button type="button" id="add-dark-seed-btn" class="btn-secondary">+ Add Seed</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Palette Output Section -->
+    <section class="deltachroma-section">
+      <h2>Generated Palettes</h2>
+      <div class="grid-two-cols">
+        <!-- Light Mode Palette Output -->
+        <div class="palette-output-card">
+          <h3>Light Palette Output</h3>
+          <div class="palette-swatches" id="light-palette-swatches">
+            <!-- Paint swatches will be rendered here -->
+          </div>
+          <div class="palette-delta-table-container" id="light-palette-table-container">
+            <!-- Delta E matrix table will be rendered here -->
+          </div>
+        </div>
+
+        <!-- Dark Mode Palette Output -->
+        <div class="palette-output-card">
+          <h3>Dark Palette Output</h3>
+          <div class="palette-swatches" id="dark-palette-swatches">
+            <!-- Paint swatches will be rendered here -->
+          </div>
+          <div class="palette-delta-table-container" id="dark-palette-table-container">
+            <!-- Delta E matrix table will be rendered here -->
+          </div>
         </div>
       </div>
     </section>

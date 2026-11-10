@@ -31,6 +31,72 @@
   border-radius: 0.75rem;
 }
 
+/* Palette parameter controls */
+.parameter-control-group {
+  background-color: var(--color-bg);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+}
+
+.parameter-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.parameter-row label {
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.parameter-slider {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--border-color);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.parameter-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-text);
+  cursor: pointer;
+}
+
+.parameter-slider::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-text);
+  cursor: pointer;
+  border: none;
+}
+
+.parameter-value {
+  flex-shrink: 0;
+  min-width: 2rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-align: center;
+}
+
+.parameter-note {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-top: 0.5rem;
+}
+
 .format-row {
   display: flex;
   justify-content: space-between;
@@ -186,4 +252,129 @@ div.color-control-box div.clr-field button {
   border-radius: 0.25rem;
   background: none;
   cursor: pointer;
+}
+
+/* Palette output card */
+.palette-output-card {
+  background-color: var(--color-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+/* Paint swatches grid */
+.palette-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Individual paint swatch (DIY shop style) */
+.paint-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 90px;
+}
+
+/* Colour patch */
+.paint-colour-patch {
+  width: 90px;
+  height: 60px;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+}
+
+/* Info panel underneath patch */
+.paint-colour-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.paint-format-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+}
+
+.paint-format-label {
+  color: var(--color-muted);
+}
+
+.paint-format-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+/* Delta E matrix table container */
+.palette-delta-table-container {
+  overflow-x: auto;
+}
+
+.delta-e-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.6875rem;
+}
+
+.delta-e-table th,
+.delta-e-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.25rem;
+  text-align: center;
+}
+
+.delta-e-table th {
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.8),
+    0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.delta-e-table th:first-child,
+.delta-e-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.8),
+    0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.delta-e-table th:first-child {
+  background-color: var(--color-bg);
+  z-index: 3;
+}
+
+.delta-e-cell-zero {
+  color: var(--color-muted);
+}
+
+.delta-e-cell-low {
+  color: var(--color-green);
+}
+
+.delta-e-cell-mid {
+  color: var(--color-amber);
+}
+
+.delta-e-cell-high {
+  color: var(--color-red);
+}
+
+/* Table cell background colour swatches */
+.palette-swatch-bg {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-color);
+  display: inline-block;
+  margin-right: 0.25rem;
+  vertical-align: middle;
 }
