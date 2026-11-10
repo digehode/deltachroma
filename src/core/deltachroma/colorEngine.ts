@@ -48,7 +48,11 @@ export class ChromaColor {
 
   /** Serialize to OKLCH CSS string format */
   toOklchString(precision = 3): string {
-    return this._internal.to('oklch').toString({ format: 'oklch', precision });
+    // colorjs.io serializes achromatic hue as "none"; normalise to 0
+    return this._internal
+      .to('oklch')
+      .toString({ format: 'oklch', precision })
+      .replace(/\bnone\b/g, '0');
   }
 
   /** Serialize to Oklab CSS string format */

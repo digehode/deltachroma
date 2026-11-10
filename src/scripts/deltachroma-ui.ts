@@ -129,19 +129,34 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
   const seedDiv = document.createElement('div');
   seedDiv.className = 'seed-entry';
   seedDiv.innerHTML = `
-    <input
-      type="text"
-      class="coloris-input"
-      data-coloris
-      value="${randomHex()}"
-    />
-    <div class="seed-colour-displays">
-      <span class="seed-hex-display"></span>
+    <div class="seed-row1">
+      <div class="seed-picker-wrapper">
+        <input
+          type="text"
+          class="coloris-input"
+          data-coloris
+          value="${randomHex()}"
+        />
+      </div>
+      <button type="button" class="btn-delete-seed">×</button>
+    </div>
+    <div class="seed-row2">
+      <div class="seed-swatch-container">
+        <div class="seed-bg-swatch"></div>
+        <div class="seed-fg-swatch"></div>
+      </div>
+      <div class="seed-contrast-message"></div>
+    </div>
+    <div class="seed-row3">
       <span class="seed-rgb-display"></span>
       <span class="seed-oklch-display"></span>
+      <label class="seed-lock">
+        <input type="checkbox" class="seed-lock-toggle" />
+        Lock
+      </label>
     </div>
-    <button type="button" class="btn-delete-seed">×</button>
-  `;
+  </div>
+`;
 
   const container = root.querySelector(`#${mode}-seeds`) as HTMLElement;
   const button = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
@@ -152,23 +167,90 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
   // Attach Coloris to the new colour input
   refreshColoris();
 
-  // Update colour displays when the input changes
+  // Set the mode background colour on the layered swatch container
+  const bgInput = root.querySelector(`#${mode}-bg-input`) as HTMLInputElement;
+  const bgColour = bgInput ? bgInput.value : '#ffffff';
+  const swatchContainer = seedDiv.querySelector('.seed-swatch-container') as HTMLElement;
+  if (swatchContainer) swatchContainer.style.backgroundColor = bgColour;
+
+  // Update colour displays (rgb/oklch)
+  const updateSeedDisplay = () => {
+    const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
+    try {
+      const color = new ChromaColor(colourInput.value);
+      const rgbDisplay = seedDiv.querySelector('.seed-rgb-display') as HTMLElement;
+      const oklchDisplay = seedDiv.querySelector('.seed-oklch-display') as HTMLElement;
+      if (rgbDisplay) rgbDisplay.textContent = color.toCss('rgb');
+      if (oklchDisplay) oklchDisplay.textContent = color.toCss('oklch', 2);
+    } catch {
+      // Invalid colour value - leave displays empty
+    }
+  };
+
+  // Update swatch and contrast message whenever seed or background changes
+  const updateSeedContrast = () => {
+    const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
+    const currentBgInput = root.querySelector(`#${mode}-bg-input`) as HTMLInputElement;
+    try {
+      const seedColor = new ChromaColor(colourInput.value);
+      const bgColor = new ChromaColor(currentBgInput ? currentBgInput.value : '#ffffff');
+
+      // Update swatch container background to match current mode background
+      if (swatchContainer) swatchContainer.style.backgroundColor = bgColor.toCss('hex');
+
+      // Update fg swatch to show seed colour
+      const fgSwatch = seedDiv.querySelector('.seed-fg-swatch') as HTMLElement;
+      if (fgSwatch) fgSwatch.style.backgroundColor = seedColor.toCss('hex');
+
+      // Calculate and display contrast
+      const ratio = seedColor.contrast(bgColor);
+      const ratioFormatted = ratio.toFixed(1);
+      const contrastDiv = seedDiv.querySelector('.seed-contrast-message') as HTMLElement;
+      if (!contrastDiv) return;
+
+      contrastDiv.className = 'seed-contrast-message';
+      if (ratio < 3) {
+        contrastDiv.classList.add('fg-red');
+        contrastDiv.textContent = `Contrast ${ratioFormatted}:1 - fails WCAG`;
+      } else if (ratio < 4.5) {
+        contrastDiv.classList.add('fg-amber');
+        contrastDiv.textContent = `Contrast ${ratioFormatted}:1 - large text only`;
+      } else {
+        contrastDiv.classList.add('fg-green');
+        contrastDiv.textContent = `Contrast ${ratioFormatted}:1 - meets WCAG`;
+      }
+    } catch {
+      // Invalid colour - leave contrast message empty
+      const contrastDiv = seedDiv.querySelector('.seed-contrast-message') as HTMLElement;
+      if (contrastDiv) contrastDiv.textContent = '';
+    }
+  };
+
+  // Initial display and contrast
+  updateSeedDisplay();
+  updateSeedContrast();
+
+  // Update on seed colour change
   const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
   if (colourInput) {
-    colourInput.addEventListener('input', (e) => {
-      const input = e.target as HTMLInputElement;
-      try {
-        const color = new ChromaColor(input.value);
-        const hexDisplay = seedDiv.querySelector('.seed-hex-display') as HTMLElement;
-        const rgbDisplay = seedDiv.querySelector('.seed-rgb-display') as HTMLElement;
-        const oklchDisplay = seedDiv.querySelector('.seed-oklch-display') as HTMLElement;
-        if (hexDisplay) hexDisplay.textContent = color.toCss('hex');
-        if (rgbDisplay) rgbDisplay.textContent = color.toCss('rgb');
-        if (oklchDisplay) oklchDisplay.textContent = color.toCss('oklch', 2);
-      } catch {
-        // Invalid colour value - leave displays empty
-      }
+    colourInput.addEventListener('input', () => {
+      updateSeedDisplay();
+      updateSeedContrast();
     });
+
+    // Update contrast when background changes too
+    if (bgInput) {
+      bgInput.addEventListener('input', updateSeedContrast);
+    }
+
+    // Lock toggle: track locked state on the seed entry
+    const lockToggle = seedDiv.querySelector('.seed-lock-toggle') as HTMLInputElement;
+    if (lockToggle) {
+      lockToggle.addEventListener('change', (e) => {
+        const isLocked = (e.target as HTMLInputElement).checked;
+        seedDiv.classList.toggle('seed-locked', isLocked);
+      });
+    }
   }
 }
 

@@ -9,7 +9,7 @@
     "Open Sans", "Helvetica Neue", sans-serif;
 
   /* Accessible high-contrast color palette (WCAG AAA compliant defaults) */
-  --color-bg: #ede5e5;
+  --color-bg: #ede0e0;
   --color-bg-alt: #faeeee;
   --color-text: #1a1a1a;
   --color-primary: #aa4673; /* High contrast primary */
@@ -21,6 +21,7 @@
   --color-red: #770000;
   --color-green: #006600;
   --color-blue: #000066;
+  --color-amber: #b45309;
   --color-red-invert: #ff8888;
   --color-green-invert: #88ff88;
   --color-blue-invert: #8888ff;
@@ -38,6 +39,7 @@
     --color-red: #ff8888;
     --color-green: #88ff88;
     --color-blue: #8888ff;
+    --color-amber: #fbbf24;
 
     --color-red-invert: #660000;
     --color-green-invert: #006600;
@@ -57,6 +59,9 @@
 }
 .fg-green {
   color: var(--color-green);
+}
+.fg-amber {
+  color: var(--color-amber);
 }
 .fg-green-invert {
   color: var(--color-green-invert);
