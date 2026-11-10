@@ -2,7 +2,7 @@
 import '@/styles/deltachroma-app.css';
 ---
 
-<div class="deltachroma-app">
+<div class="deltachroma-app" id="deltachroma-root">
   <div class="card-panel">
 
     <!-- Background Surfaces Section -->
@@ -115,6 +115,8 @@ import '@/styles/deltachroma-app.css';
   import { initDeltaChromaUI } from '../scripts/deltachroma-ui';
 
   initColorisPicker();
-  initDeltaChromaUI();
-  initSeedButtons(document);
+  const root = document.getElementById('deltachroma-root');
+  if (root) {
+    initDeltaChromaUI(root);
+  }
 </script>

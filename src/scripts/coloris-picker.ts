@@ -10,3 +10,12 @@ export function initColorisPicker(): void {
     alpha: false,
   });
 }
+
+/** Re-scan and attach Coloris to dynamically added color inputs. */
+export function refreshColoris(): void {
+  Coloris({
+    el: '.coloris-input',
+    themeMode: 'auto',
+    alpha: false,
+  });
+}

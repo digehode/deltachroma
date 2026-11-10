@@ -1,6 +1,5 @@
-import Coloris from '@melloware/coloris';
 import { ChromaColor } from '@/core/deltachroma';
-import { presentColor } from './color-view';
+import { refreshColoris } from './coloris-picker';
 import '@melloware/coloris/dist/coloris.css';
 
 interface ColorCardRefs {
@@ -50,8 +49,10 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
     return;
   }
 
-  const presentation = presentColor(input.value);
-  if (!presentation) {
+  let color: ChromaColor;
+  try {
+    color = new ChromaColor(input.value);
+  } catch {
     // Ignore intermediate malformed values while the user is still typing.
     // Clear any previous validation results.
     validationDiv.innerHTML = '';
@@ -59,13 +60,12 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   }
 
   // Update color displays
-  swatch.style.backgroundColor = presentation.hex;
-  hex.textContent = presentation.hex;
-  rgb.textContent = presentation.rgb;
-  oklch.textContent = presentation.oklch;
+  swatch.style.backgroundColor = color.toCss('hex');
+  hex.textContent = color.toCss('hex');
+  rgb.textContent = color.toCss('rgb');
+  oklch.textContent = color.toCss('oklch', 2);
 
   // Run background validation
-  const color = new ChromaColor(input.value);
   const isLight = card.inputId.includes('light');
   let validationResult: { success: boolean; messages: string[] };
 
@@ -96,28 +96,13 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   }
 }
 
-/** Add a seed entry to the specified container, inserting after the button */
-function _addSeed(root: ParentNode, containerId: string): void {
-  const seedDiv = document.createElement('div');
-  seedDiv.className = 'seed-entry';
-  seedDiv.innerHTML = `
-    <span class="seed-hex"></span>
-    <button type="button" class="btn-delete-seed">×</button>
-  `;
-
-  const container = root.querySelector(`#${containerId}-seeds`) as HTMLElement;
-  const button = root.querySelector(`#add-${containerId}-seed-btn`) as HTMLButtonElement;
-  if (container && button) {
-    container.parentNode?.insertBefore(seedDiv, button.nextSibling);
-  }
-}
-
 /** Initialize seed button event listeners */
 function initSeedButtons(root: ParentNode): void {
-  ['light', 'dark'].forEach((mode) => {
+  const modes = ['light', 'dark'] as const;
+  modes.forEach((mode) => {
     const addBtn = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
     if (addBtn) {
-      addBtn.addEventListener('click', () => Zo(root, mode));
+      addBtn.addEventListener('click', () => createSeedEntry(root, mode));
     }
   });
 
@@ -134,7 +119,7 @@ function initSeedButtons(root: ParentNode): void {
 }
 
 /** Create a new seed entry with colour picker and displays */
-function Zo(root: ParentNode, containerId: string): void {
+function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
   const seedDiv = document.createElement('div');
   seedDiv.className = 'seed-entry';
   seedDiv.innerHTML = `
@@ -142,6 +127,7 @@ function Zo(root: ParentNode, containerId: string): void {
       type="text"
       class="coloris-input"
       data-coloris
+      value="#ffffff"
     />
     <div class="seed-colour-displays">
       <span class="seed-hex-display"></span>
@@ -151,19 +137,14 @@ function Zo(root: ParentNode, containerId: string): void {
     <button type="button" class="btn-delete-seed">×</button>
   `;
 
-  const container = root.querySelector(`#${containerId}-seeds`) as HTMLElement;
-  const button = root.querySelector(`#add-${containerId}-seed-btn`) as HTMLButtonElement;
+  const container = root.querySelector(`#${mode}-seeds`) as HTMLElement;
+  const button = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
   if (container && button) {
     container.parentNode?.insertBefore(seedDiv, button.nextSibling);
   }
 
-  // Initialize Coloris on the new colour input
-  Coloris.init();
-  Coloris({
-    el: '.coloris-input',
-    themeMode: 'auto',
-    alpha: false,
-  });
+  // Attach Coloris to the new colour input
+  refreshColoris();
 
   // Update colour displays when the input changes
   const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
