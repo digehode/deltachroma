@@ -6,6 +6,6 @@ pre-commit:
     2-lint-docs:
       run: npm run lint:markdown
     3-typecheck:
-      run: npx tsc --noEmit      
+      run: npx astro sync && npx tsc --noEmit
     4-test:
       run: npm run test

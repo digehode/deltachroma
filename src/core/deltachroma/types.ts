@@ -1,7 +1,5 @@
 import type { ChromaColor } from './colorEngine';
 
-export type ColorFormat = 'hex' | 'rgb' | 'oklch' | 'oklab';
-
 export interface SeedColor {
   id: string;
   color: ChromaColor; // Using our internal wrapper type directly

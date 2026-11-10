@@ -1,21 +1,15 @@
 // src/scripts/deltachroma-ui.ts
+import '@melloware/coloris/dist/coloris.css';
+import Coloris from '@melloware/coloris';
 import { ChromaColor } from '@/core/deltachroma';
 
-// Extend Window interface for Coloris plugin
-declare global {
-  interface Window {
-    Coloris: (options?: unknown) => void;
-  }
-}
-
-// Initialize Coloris picker popup when DOM is ready
-if (typeof window !== 'undefined' && window.Coloris) {
-  window.Coloris({
-    el: '.coloris-input',
-    themeMode: 'auto',
-    alpha: false,
-  });
-}
+// Initialize the bundled Coloris picker before using it.
+Coloris.init();
+Coloris({
+  el: '.coloris-input',
+  themeMode: 'auto',
+  alpha: false,
+});
 
 // Core update handler utilizing our ChromaColor engine wrapper
 function updateColorCard(
@@ -36,15 +30,9 @@ function updateColorCard(
   try {
     // Instantiate through our wrapped engine class
     const color = new ChromaColor(input.value);
-    const hex = color.toHex();
-    const oklch = color.toOklchString(2);
-
-    // Extract sRGB integer channels for standard rgb() string
-    const rawRgb = color.raw.to('srgb');
-    const r = Math.round(Math.max(0, Math.min(1, rawRgb.coords[0] ?? 0)) * 255);
-    const g = Math.round(Math.max(0, Math.min(1, rawRgb.coords[1] ?? 0)) * 255);
-    const b = Math.round(Math.max(0, Math.min(1, rawRgb.coords[2] ?? 0)) * 255);
-    const rgbStr = `rgb(${r}, ${g}, ${b})`;
+    const hex = color.toCss('hex');
+    const rgbStr = color.toCss('rgb');
+    const oklch = color.toCss('oklch', 2);
 
     // Apply updates to UI elements
     swatch.style.backgroundColor = hex;

@@ -10,7 +10,9 @@
 
     "includes": [
       "**/src/**/*.ts",
+      "**/tests/**/*.ts",
       "**/src/**/*.css",
+      "vitest.config.ts",
       "**/*.json",
       "**/*.jsonc",
       "!**/dist/",
@@ -34,16 +36,5 @@
     "formatter": {
       "quoteStyle": "single"
     }
-  },
-  "overrides": [
-    {
-      "includes": ["**/*.md"],
-      "formatter": {
-        "enabled": true
-      },
-      "linter": {
-        "enabled": true
-      }
-    }
-  ]
+  }
 }
