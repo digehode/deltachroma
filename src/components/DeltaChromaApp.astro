@@ -20,13 +20,13 @@ import '@/styles/deltachroma-app.css';
             <input 
               type="text" 
               id="light-bg-input" 
-              class="coloris-input fixed-data" 
+              class="coloris-input fixed-data deltachroma-picker" 
               value="#ffffff" 
               data-coloris
             />
           </div>
           
-          <div id="light-swatch" class="swatch" style="background-color: #ffffff;"></div>
+          <div id="light-swatch" class="swatch" ></div>
 
           <div class="color-formats">
             <div class="format-row">
@@ -42,6 +42,7 @@ import '@/styles/deltachroma-app.css';
               <span id="light-oklch" class="fixed-data">oklch(1 0 0)</span>
             </div>
           </div>
+          <div class="color-validation text-small text-bold" id="light-validation"></div>
         </div>
 
         <!-- Dark Mode Background Block -->
@@ -54,13 +55,13 @@ import '@/styles/deltachroma-app.css';
             <input 
               type="text" 
               id="dark-bg-input" 
-              class="coloris-input fixed-data" 
+              class="coloris-input fixed-data deltachroma-picker" 
               value="#121212" 
               data-coloris
             />
           </div>
           
-          <div id="dark-swatch" class="swatch" style="background-color: #121212;"></div>
+          <div id="dark-swatch" class="swatch" ></div>
 
           <div class="color-formats">
             <div class="format-row">
@@ -76,6 +77,7 @@ import '@/styles/deltachroma-app.css';
               <span id="dark-oklch" class="fixed-data">oklch(0.2 0 0)</span>
             </div>
           </div>
+          <div class="color-validation text-small text-bold" id="dark-validation"></div>
         </div>
 
       </div>

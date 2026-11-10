@@ -47,9 +47,12 @@
 .clr-field {
   display: block;
   position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 0.1rem solid var(--border-color);
 }
 
-.coloris-input {
+.deltachroma-picker {
   width: 100%;
   cursor: pointer;
   border: 1px solid var(--border-color);
@@ -57,17 +60,23 @@
 
 /* Coloris widget swatch preview button inside the field */
 .clr-field input {
-  padding-left: 2.5rem; /* Make room for the color preview swatch */
+  padding-left: 2.9rem; /* Make room for the color preview swatch */
+  border: none;
 }
 
-.clr-field button {
+/* Ensure Coloris input container / picker triggers have a visible border */
+div.color-control-box div.clr-field button {
   position: absolute;
-  top: 50%;
-  left: 0rem;
-  transform: translateY(-50%);
+  top: 0;
+  left: 0;
+  transform: none; /* Remove centering if it was causing issues */
   width: 2.5rem;
-  height: 1.5rem;
-  border-radius: 0.25rem;
-  border: 1px solid var(--border-color);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  height: 100%; /* Fill container height for a clean square edge */
+  border: none; /* Remove button border so it sits flush */
+  border-right: 1px solid var(--border-color); /* Optional: separate swatch from input text */
+}
+/* Fixed-height validation area under each colour box — 3 lines, no resizing */
+.color-validation {
+  min-height: 7rem;
+  overflow-wrap: break-word;
 }

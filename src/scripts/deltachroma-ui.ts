@@ -1,3 +1,4 @@
+import { ChromaColor } from '@/core/deltachroma';
 import { presentColor } from './color-view';
 
 interface ColorCardRefs {
@@ -6,6 +7,7 @@ interface ColorCardRefs {
   hexId: string;
   rgbId: string;
   oklchId: string;
+  validationId: string;
 }
 
 const COLOR_CARDS: readonly ColorCardRefs[] = [
@@ -15,6 +17,7 @@ const COLOR_CARDS: readonly ColorCardRefs[] = [
     hexId: 'light-hex',
     rgbId: 'light-rgb',
     oklchId: 'light-oklch',
+    validationId: 'light-validation',
   },
   {
     inputId: 'dark-bg-input',
@@ -22,8 +25,16 @@ const COLOR_CARDS: readonly ColorCardRefs[] = [
     hexId: 'dark-hex',
     rgbId: 'dark-rgb',
     oklchId: 'dark-oklch',
+    validationId: 'dark-validation',
   },
 ];
+
+function createValidationSpan(className: string, text: string): HTMLSpanElement {
+  const span = document.createElement('span');
+  span.className = className;
+  span.textContent = text;
+  return span;
+}
 
 function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   const input = root.querySelector(`#${card.inputId}`);
@@ -31,21 +42,56 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   const hex = root.querySelector<HTMLElement>(`#${card.hexId}`);
   const rgb = root.querySelector<HTMLElement>(`#${card.rgbId}`);
   const oklch = root.querySelector<HTMLElement>(`#${card.oklchId}`);
+  const validationDiv = root.querySelector<HTMLElement>(`#${card.validationId}`);
 
-  if (!(input instanceof HTMLInputElement) || !swatch || !hex || !rgb || !oklch) {
+  if (!(input instanceof HTMLInputElement) || !swatch || !hex || !rgb || !oklch || !validationDiv) {
     return;
   }
 
   const presentation = presentColor(input.value);
   if (!presentation) {
     // Ignore intermediate malformed values while the user is still typing.
+    // Clear any previous validation results.
+    validationDiv.innerHTML = '';
     return;
   }
 
+  // Update color displays
   swatch.style.backgroundColor = presentation.hex;
   hex.textContent = presentation.hex;
   rgb.textContent = presentation.rgb;
   oklch.textContent = presentation.oklch;
+
+  // Run background validation
+  const color = new ChromaColor(input.value);
+  const isLight = card.inputId.includes('light');
+  let validationResult: { success: boolean; messages: string[] };
+
+  if (isLight) {
+    validationResult = color.validateLightBackground();
+  } else {
+    validationResult = color.validateDarkBackground();
+  }
+
+  // Clear previous validation results
+  validationDiv.innerHTML = '';
+
+  if (validationResult.success) {
+    // Success: show green checkmark
+    const successSpan = createValidationSpan('fg-green', 'Colour appropriate for background');
+    validationDiv.appendChild(successSpan);
+  } else {
+    // Failure: show each message in red, one per line
+    validationResult.messages.forEach((message) => {
+      const msgSpan = createValidationSpan('fg-red', message);
+      validationDiv.appendChild(msgSpan);
+      // Add line break after each message except the last
+      if (message !== validationResult.messages[validationResult.messages.length - 1]) {
+        const br = document.createElement('br');
+        validationDiv.appendChild(br);
+      }
+    });
+  }
 }
 
 /**

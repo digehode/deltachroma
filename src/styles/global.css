@@ -9,16 +9,16 @@
     "Open Sans", "Helvetica Neue", sans-serif;
 
   /* Accessible high-contrast color palette (WCAG AAA compliant defaults) */
-  --color-bg: #ffffff;
-  --color-bg-alt: #ffeeee;
+  --color-bg: #ede5e5;
+  --color-bg-alt: #faeeee;
   --color-text: #1a1a1a;
   --color-primary: #aa4673; /* High contrast primary */
   --color-focus: #aabf00; /* High visibility focus */
-  --border-color: rgba(0, 0, 0, 0.5);
+  --border-color: rgba(50, 0, 0, 0.5);
   --color-muted: #555;
   --fg-gradient-a: rgba(100, 20, 00, 1);
   --fg-gradient-b: rgba(00, 20, 100, 1);
-  --color-red: #660000;
+  --color-red: #770000;
   --color-green: #006600;
   --color-blue: #000066;
   --color-red-invert: #ff8888;
@@ -29,7 +29,7 @@
 /* Respect user preference for dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #121212;
+    --color-bg: #171414;
     --color-bg-alt: #1a1a22;
     --color-text: #f5f5f5;
     --color-primary: #ffb299;
@@ -42,10 +42,13 @@
     --color-red-invert: #660000;
     --color-green-invert: #006600;
     --color-blue-invert: #000066;
-    --border-color: rgba(255, 255, 255, 0.2);
+    --border-color: rgba(255, 200, 200, 0.2);
   }
 }
 
+.text-bold {
+  font-weight: 600;
+}
 .fg-red {
   color: var(--color-red);
 }
@@ -131,6 +134,10 @@ body {
 
   margin: 0;
   padding: 0;
+}
+
+.text-small {
+  font-size: 0.8rem;
 }
 
 /* ==========================================================================

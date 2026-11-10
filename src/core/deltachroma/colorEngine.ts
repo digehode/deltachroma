@@ -19,6 +19,11 @@ function toByte(channel: number | null | undefined): number {
   return Math.round(normalized * 255);
 }
 
+export interface ColorValidationResult {
+  success: boolean;
+  messages: string[];
+}
+
 /**
  * ChromaColor wraps colorjs.io to provide a stable internal representation
  * for DeltaChroma, insulating the rest of the application from direct third-party API changes.
@@ -111,5 +116,67 @@ export class ChromaColor {
   /** Create an independent clone of the current ChromaColor */
   clone(): ChromaColor {
     return ChromaColor.fromInternal(this._internal.clone());
+  }
+
+  /**
+   * Validate this color specifically as a Light Mode background surface.
+   * Checks for pure white glare and excessive chroma/saturation.
+   */
+  validateLightBackground(): ColorValidationResult {
+    const messages: string[] = [];
+    const [l, c] = this.oklchCoords;
+
+    // Check for pure white / extreme high lightness glare
+    if (l >= 0.99) {
+      messages.push(
+        'Warning: Pure white backgrounds produce high-luminance glare and eye fatigue. Consider using a soft off-white.',
+      );
+    } else if (l < 0.79) {
+      messages.push(
+        'Warning: Background lightness is low for a standard light theme; it will crush dark text contrast.',
+      );
+    }
+
+    // Check for excessive background chroma (tint saturation)
+    if (c > 0.06) {
+      messages.push(
+        'Warning: Background chroma is high. Tinted surface backgrounds should remain desaturated to preserve UI readability.',
+      );
+    }
+
+    return {
+      success: messages.length === 0,
+      messages,
+    };
+  }
+
+  /**
+   * Validate this color specifically as a Dark Mode background surface.
+   * Checks for absolute black crushing and excessive chroma.
+   */
+  validateDarkBackground(): ColorValidationResult {
+    const messages: string[] = [];
+    const [l, c] = this.oklchCoords;
+
+    // Check for pure black / extreme low lightness
+    if (l <= 0.01) {
+      messages.push(
+        'Warning: Pure black backgrounds can cause optical smearing and harsh contrast halos on OLED screens. Consider using a deep slate or navy.',
+      );
+    } else if (l > 0.4) {
+      messages.push('Warning: Background lightness is high for a standard dark theme.');
+    }
+
+    // Check for excessive background chroma
+    if (c > 0.07) {
+      messages.push(
+        'Warning: Dark background chroma is high. Tinted dark surfaces should remain deeply muted.',
+      );
+    }
+
+    return {
+      success: messages.length === 0,
+      messages,
+    };
   }
 }

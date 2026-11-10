@@ -1,6 +1,6 @@
 // Export the core color engine wrapper
 
-export type { ColorFormat } from './colorEngine';
+export type { ColorFormat, ColorValidationResult } from './colorEngine';
 export { ChromaColor } from './colorEngine';
 
 // Export all public domain types

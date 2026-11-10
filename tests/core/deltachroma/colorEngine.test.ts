@@ -144,4 +144,70 @@ describe('ChromaColor', () => {
       expect(clone.oklchCoords).toEqual(original.oklchCoords);
     });
   });
+
+  describe('background validation', () => {
+    it('flags pure white as glare risk in light background (warning, not error)', () => {
+      const white = new ChromaColor('#ffffff');
+      const result = white.validateLightBackground();
+
+      expect(result.success).toBe(false);
+      // Message starts with "Warning" and mentions pure white + glare
+      expect(result.messages).toContainEqual(expect.stringMatching(/Warning.*Pure white.*glare/));
+    });
+
+    it('flags too-dark background for light theme as error', () => {
+      const darkGrey = new ChromaColor('#212529');
+      const result = darkGrey.validateLightBackground();
+
+      expect(result.success).toBe(false);
+      expect(result.messages).toContainEqual(expect.stringMatching(/Background lightness is low/));
+    });
+
+    it('flags overly saturated light background as error', () => {
+      const saturated = new ChromaColor('#ff6b6b'); // highly saturated light red
+      const result = saturated.validateLightBackground();
+
+      expect(result.success).toBe(false);
+      expect(result.messages).toContainEqual(expect.stringMatching(/Background chroma is high/));
+    });
+
+    it('flags pure black as optical smearing risk in dark background (warning, not error)', () => {
+      const black = new ChromaColor('#000000');
+      const result = black.validateDarkBackground();
+
+      expect(result.success).toBe(false);
+      // Message starts with "Warning" and mentions pure black + optical smearing
+      expect(result.messages).toContainEqual(
+        expect.stringMatching(/Warning.*Pure black.*optical smearing/),
+      );
+    });
+
+    it('flags too-bright background for dark theme as error', () => {
+      const lightGrey = new ChromaColor('#e0e0e0');
+      const result = lightGrey.validateDarkBackground();
+
+      expect(result.success).toBe(false);
+      expect(result.messages).toContainEqual(expect.stringMatching(/Background lightness is high/));
+    });
+
+    it('flags overly saturated dark background as error', () => {
+      const saturated = new ChromaColor('#00ff00'); // bright green
+      const result = saturated.validateDarkBackground();
+
+      expect(result.success).toBe(false);
+      expect(result.messages).toContainEqual(
+        expect.stringMatching(/Dark background chroma is high/),
+      );
+    });
+
+    it('returns result with boolean success and string array messages', () => {
+      const color = new ChromaColor('#3b82f6');
+      const result = color.validateLightBackground();
+
+      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('messages');
+      expect(typeof result.success).toBe('boolean');
+      expect(Array.isArray(result.messages)).toBe(true);
+    });
+  });
 });
