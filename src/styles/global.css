@@ -583,7 +583,7 @@ time {
     background-color: var(--color-bg-alt);
     border: 1px solid var(--border-color);
     border-radius: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); //TODO: extract this and make a .shadow class with light/dark colours
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* TODO: extract this and make a .shadow class with light/dark colours */
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
