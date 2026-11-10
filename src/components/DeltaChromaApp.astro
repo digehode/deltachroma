@@ -83,5 +83,11 @@ import '@/styles/deltachroma-app.css';
   </div>
 </div>
 
-<!-- Import decoupled client-side UI script -->
-<script src="../scripts/deltachroma-ui.ts"></script>
+<!-- Wire up the Coloris picker and the background-color cards -->
+<script>
+  import { initColorisPicker } from '../scripts/coloris-picker';
+  import { initDeltaChromaUI } from '../scripts/deltachroma-ui';
+
+  initColorisPicker();
+  initDeltaChromaUI();
+</script>
