@@ -108,6 +108,27 @@ div.color-control-box div.clr-field button {
   text-overflow: ellipsis;
 }
 
+/* Seed colour display areas (no swatch) */
+.seed-hex-display {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  min-width: 4rem;
+}
+
+.seed-rgb-display {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--color-text);
+  min-width: 6rem;
+}
+
+.seed-oklch-display {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--color-text);
+  min-width: 6rem;
+}
+
 .btn-delete-seed {
   flex-shrink: 0;
   margin-left: 0.5rem;

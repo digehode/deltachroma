@@ -1,5 +1,7 @@
+import Coloris from '@melloware/coloris';
 import { ChromaColor } from '@/core/deltachroma';
 import { presentColor } from './color-view';
+import '@melloware/coloris/dist/coloris.css';
 
 interface ColorCardRefs {
   inputId: string;
@@ -95,7 +97,7 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
 }
 
 /** Add a seed entry to the specified container, inserting after the button */
-function addSeed(root: ParentNode, containerId: string): void {
+function _addSeed(root: ParentNode, containerId: string): void {
   const seedDiv = document.createElement('div');
   seedDiv.className = 'seed-entry';
   seedDiv.innerHTML = `
@@ -115,7 +117,7 @@ function initSeedButtons(root: ParentNode): void {
   ['light', 'dark'].forEach((mode) => {
     const addBtn = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
     if (addBtn) {
-      addBtn.addEventListener('click', () => addSeed(root, mode));
+      addBtn.addEventListener('click', () => Zo(root, mode));
     }
   });
 
@@ -129,6 +131,58 @@ function initSeedButtons(root: ParentNode): void {
       }
     }
   });
+}
+
+/** Create a new seed entry with colour picker and displays */
+function Zo(root: ParentNode, containerId: string): void {
+  const seedDiv = document.createElement('div');
+  seedDiv.className = 'seed-entry';
+  seedDiv.innerHTML = `
+    <input
+      type="text"
+      class="coloris-input"
+      data-coloris
+    />
+    <div class="seed-colour-displays">
+      <span class="seed-hex-display"></span>
+      <span class="seed-rgb-display"></span>
+      <span class="seed-oklch-display"></span>
+    </div>
+    <button type="button" class="btn-delete-seed">×</button>
+  `;
+
+  const container = root.querySelector(`#${containerId}-seeds`) as HTMLElement;
+  const button = root.querySelector(`#add-${containerId}-seed-btn`) as HTMLButtonElement;
+  if (container && button) {
+    container.parentNode?.insertBefore(seedDiv, button.nextSibling);
+  }
+
+  // Initialize Coloris on the new colour input
+  Coloris.init();
+  Coloris({
+    el: '.coloris-input',
+    themeMode: 'auto',
+    alpha: false,
+  });
+
+  // Update colour displays when the input changes
+  const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
+  if (colourInput) {
+    colourInput.addEventListener('input', (e) => {
+      const input = e.target as HTMLInputElement;
+      try {
+        const color = new ChromaColor(input.value);
+        const hexDisplay = seedDiv.querySelector('.seed-hex-display') as HTMLElement;
+        const rgbDisplay = seedDiv.querySelector('.seed-rgb-display') as HTMLElement;
+        const oklchDisplay = seedDiv.querySelector('.seed-oklch-display') as HTMLElement;
+        if (hexDisplay) hexDisplay.textContent = color.toCss('hex');
+        if (rgbDisplay) rgbDisplay.textContent = color.toCss('rgb');
+        if (oklchDisplay) oklchDisplay.textContent = color.toCss('oklch', 2);
+      } catch {
+        // Invalid colour value - leave displays empty
+      }
+    });
+  }
 }
 
 /**
