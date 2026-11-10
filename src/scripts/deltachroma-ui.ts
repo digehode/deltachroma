@@ -151,12 +151,77 @@ function initPalettes(size: number): void {
 }
 
 /** Render paint swatches and delta E table for one mode. */
+/** Vision types for Delta E comparison, in display order. */
+const VISION_TYPES: readonly { label: string; transform: (c: ChromaColor) => ChromaColor }[] = [
+  { label: 'Normal vision', transform: (c) => c },
+  { label: 'Protanomaly', transform: (c) => c.protan() },
+  { label: 'Deuteranomaly', transform: (c) => c.deutan() },
+  { label: 'Tritanomaly', transform: (c) => c.tritan() },
+];
+
+/** Render a single Delta E matrix table for a given palette and vision type. */
+function renderDeltaETable(
+  container: HTMLElement,
+  palette: ChromaColor[],
+  vision: { label: string; transform: (c: ChromaColor) => ChromaColor },
+): void {
+  const section = document.createElement('div');
+  section.className = 'vision-section';
+
+  const title = document.createElement('h4');
+  title.className = 'vision-section-title';
+  title.textContent = vision.label;
+  section.appendChild(title);
+
+  const table = document.createElement('table');
+  table.className = 'delta-e-table';
+
+  const n = palette.length;
+  const transformed = palette.map(vision.transform);
+
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.appendChild(document.createElement('th')); // top-left corner
+  for (let j = 0; j < n; j++) {
+    const th = document.createElement('th');
+    th.style.backgroundColor = transformed[j].toCss('hex');
+    th.textContent = String(j + 1);
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (let i = 0; i < n; i++) {
+    const row = document.createElement('tr');
+    const rowLabel = document.createElement('td');
+    rowLabel.style.backgroundColor = transformed[i].toCss('hex');
+    rowLabel.textContent = String(i + 1);
+    row.appendChild(rowLabel);
+    for (let j = 0; j < n; j++) {
+      const cell = document.createElement('td');
+      const deltaE = transformed[i].deltaE(transformed[j]);
+      cell.textContent = deltaE.toFixed(1);
+      if (i === j) cell.classList.add('delta-e-cell-zero');
+      else if (deltaE < 3) cell.classList.add('delta-e-cell-low');
+      else if (deltaE < 7.5) cell.classList.add('delta-e-cell-mid');
+      else cell.classList.add('delta-e-cell-high');
+      row.appendChild(cell);
+    }
+    tbody.appendChild(row);
+  }
+  table.appendChild(tbody);
+  section.appendChild(table);
+  container.appendChild(section);
+}
+
+/** Render paint swatches and delta E tables for one mode, across all vision types. */
 function renderPaletteSide(root: ParentNode, mode: 'light' | 'dark', palette: ChromaColor[]): void {
   const swatchesContainer = root.querySelector(`#${mode}-palette-swatches`) as HTMLElement;
   const tableContainer = root.querySelector(`#${mode}-palette-table-container`) as HTMLElement;
   if (!swatchesContainer || !tableContainer) return;
 
-  // --- Paint swatches ---
+  // --- Paint swatches (always show base colours) ---
   swatchesContainer.innerHTML = '';
   palette.forEach((color, _index) => {
     const swatch = document.createElement('div');
@@ -181,45 +246,11 @@ function renderPaletteSide(root: ParentNode, mode: 'light' | 'dark', palette: Ch
     swatchesContainer.appendChild(swatch);
   });
 
-  // --- Delta E matrix table ---
+  // --- Delta E tables for each vision type ---
   tableContainer.innerHTML = '';
-  const n = palette.length;
-  const table = document.createElement('table');
-  table.className = 'delta-e-table';
-
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  headerRow.appendChild(document.createElement('th')); // top-left corner
-  for (let j = 0; j < n; j++) {
-    const th = document.createElement('th');
-    th.style.backgroundColor = palette[j].toCss('hex');
-    th.textContent = String(j + 1);
-    headerRow.appendChild(th);
+  for (const vision of VISION_TYPES) {
+    renderDeltaETable(tableContainer, palette, vision);
   }
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  for (let i = 0; i < n; i++) {
-    const row = document.createElement('tr');
-    const rowLabel = document.createElement('td');
-    rowLabel.style.backgroundColor = palette[i].toCss('hex');
-    rowLabel.textContent = String(i + 1);
-    row.appendChild(rowLabel);
-    for (let j = 0; j < n; j++) {
-      const cell = document.createElement('td');
-      const deltaE = palette[i].deltaE(palette[j]);
-      cell.textContent = deltaE.toFixed(1);
-      if (i === j) cell.classList.add('delta-e-cell-zero');
-      else if (deltaE < 3) cell.classList.add('delta-e-cell-low');
-      else if (deltaE < 7.5) cell.classList.add('delta-e-cell-mid');
-      else cell.classList.add('delta-e-cell-high');
-      row.appendChild(cell);
-    }
-    tbody.appendChild(row);
-  }
-  table.appendChild(tbody);
-  tableContainer.appendChild(table);
 }
 
 /** Render both palette outputs. */
@@ -252,7 +283,7 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
         <div class="seed-bg-swatch"></div>
         <div class="seed-fg-swatch"></div>
       </div>
-      <div class="seed-contrast-message"></div>
+      <div class="seed-contrast-group"></div>
     </div>
     <div class="seed-row3">
       <span class="seed-rgb-display"></span>
@@ -309,27 +340,58 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
       const fgSwatch = seedDiv.querySelector('.seed-fg-swatch') as HTMLElement;
       if (fgSwatch) fgSwatch.style.backgroundColor = seedColor.toCss('hex');
 
-      // Calculate and display contrast
-      const ratio = seedColor.contrast(bgColor);
-      const ratioFormatted = ratio.toFixed(1);
-      const contrastDiv = seedDiv.querySelector('.seed-contrast-message') as HTMLElement;
-      if (!contrastDiv) return;
+      // Calculate contrasts for normal vision and all CVD types
+      // CVD simulation applies the matrix to BOTH seed and background colours
+      const contrasts = [
+        { label: 'Normal', colorA: seedColor, colorB: bgColor },
+        { label: 'Protanomaly', colorA: seedColor.protan(), colorB: bgColor.protan() },
+        { label: 'Deuteranomaly', colorA: seedColor.deutan(), colorB: bgColor.deutan() },
+        { label: 'Tritanomaly', colorA: seedColor.tritan(), colorB: bgColor.tritan() },
+      ];
 
-      contrastDiv.className = 'seed-contrast-message';
-      if (ratio < 3) {
-        contrastDiv.classList.add('fg-red');
-        contrastDiv.textContent = `Contrast ${ratioFormatted}:1 - fails WCAG`;
-      } else if (ratio < 4.5) {
-        contrastDiv.classList.add('fg-amber');
-        contrastDiv.textContent = `Contrast ${ratioFormatted}:1 - large text only`;
-      } else {
-        contrastDiv.classList.add('fg-green');
-        contrastDiv.textContent = `Contrast ${ratioFormatted}:1 - meets WCAG`;
-      }
+      const contrastGroup = seedDiv.querySelector('.seed-contrast-group') as HTMLElement;
+      if (!contrastGroup) return;
+
+      contrastGroup.innerHTML = '';
+
+      contrasts.forEach(({ label, colorA, colorB }) => {
+        const ratio = colorA.contrast(colorB);
+        const ratioFormatted = ratio.toFixed(1);
+
+        const item = document.createElement('div');
+        item.className = 'seed-contrast-item';
+
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'seed-contrast-label';
+        labelSpan.textContent = label;
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'seed-contrast-value';
+        valueSpan.textContent = `${ratioFormatted}:1`;
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'seed-contrast-status';
+
+        if (ratio < 3) {
+          statusSpan.classList.add('fg-red');
+          statusSpan.textContent = 'fails WCAG';
+        } else if (ratio < 4.5) {
+          statusSpan.classList.add('fg-amber');
+          statusSpan.textContent = 'large text only';
+        } else {
+          statusSpan.classList.add('fg-green');
+          statusSpan.textContent = 'meets WCAG';
+        }
+
+        item.appendChild(labelSpan);
+        item.appendChild(valueSpan);
+        item.appendChild(statusSpan);
+        contrastGroup.appendChild(item);
+      });
     } catch {
       // Invalid colour - leave contrast message empty
-      const contrastDiv = seedDiv.querySelector('.seed-contrast-message') as HTMLElement;
-      if (contrastDiv) contrastDiv.textContent = '';
+      const contrastGroup = seedDiv.querySelector('.seed-contrast-group') as HTMLElement;
+      if (contrastGroup) contrastGroup.innerHTML = '';
     }
   };
 

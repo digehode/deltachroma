@@ -202,11 +202,36 @@ div.color-control-box div.clr-field button {
   border-radius: 0.125rem;
 }
 
-.seed-contrast-message {
+/* CVD contrast group: 4 lines (normal, protanomaly, deuteranomaly, tritanomaly) */
+.seed-contrast-group {
   flex: 1;
-  font-size: 0.7rem;
-  text-align: center;
-  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  font-size: 0.6875rem;
+}
+
+.seed-contrast-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.seed-contrast-label {
+  flex-shrink: 0;
+  width: 4rem;
+  color: var(--color-muted);
+}
+
+.seed-contrast-value {
+  flex-shrink: 0;
+  min-width: 4rem;
+  text-align: right;
+}
+
+.seed-contrast-status {
+  flex-shrink: 0;
 }
 
 /* Row 3: rgb (1/3 centered) + oklch (1/3 centered) + lock (1/3) */
@@ -312,6 +337,23 @@ div.color-control-box div.clr-field button {
 /* Delta E matrix table container */
 .palette-delta-table-container {
   overflow-x: auto;
+}
+
+/* Vision type section header */
+.vision-section {
+  margin-bottom: 1rem;
+}
+
+.vision-section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.vision-section-title:first-of-type {
+  padding-top: 0;
 }
 
 .delta-e-table {

@@ -145,6 +145,59 @@ describe('ChromaColor', () => {
     });
   });
 
+  describe('colour vision deficiency simulation', () => {
+    it('returns a new object without mutating the original', () => {
+      const original = new ChromaColor('#ff0000');
+      const originalCoords = original.oklchCoords;
+      const protan = original.protan();
+
+      expect(protan).not.toBe(original);
+      expect(protan.oklchCoords).not.toEqual(originalCoords);
+      expect(original.oklchCoords).toEqual(originalCoords);
+    });
+
+    it('preserves achromatic colours', () => {
+      for (const hex of ['#ffffff', '#000000', '#808080']) {
+        const color = new ChromaColor(hex);
+        expect(color.protan().toCss()).toBe(color.toCss());
+        expect(color.deutan().toCss()).toBe(color.toCss());
+        expect(color.tritan().toCss()).toBe(color.toCss());
+      }
+    });
+
+    it('produces different results for different CVD types', () => {
+      const red = new ChromaColor('#ff0000');
+
+      expect(red.protan().toCss()).not.toBe(red.deutan().toCss());
+      expect(red.deutan().toCss()).not.toBe(red.tritan().toCss());
+      expect(red.tritan().toCss()).not.toBe(red.protan().toCss());
+    });
+
+    it('produces valid colour strings for all CVD types', () => {
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#3b82f6', '#ff6b6b', '#000000'];
+
+      for (const hex of colors) {
+        const color = new ChromaColor(hex);
+        expect(() => color.protan().toCss()).not.toThrow();
+        expect(() => color.deutan().toCss()).not.toThrow();
+        expect(() => color.tritan().toCss()).not.toThrow();
+      }
+    });
+
+    it('simulates known CVD shifts on saturated red', () => {
+      const red = new ChromaColor('#ff0000');
+
+      // Protanopia and deuteranopia both affect red perception significantly
+      const protanRed = red.protan();
+      const deutanRed = red.deutan();
+      expect(protanRed.oklchCoords[0]).not.toBeCloseTo(red.oklchCoords[0], 2);
+      expect(deutanRed.oklchCoords[0]).not.toBeCloseTo(red.oklchCoords[0], 2);
+
+      // Protanopia and deuteranopia should produce different lightness values
+      expect(protanRed.oklchCoords[0]).not.toBeCloseTo(deutanRed.oklchCoords[0], 2);
+    });
+  });
+
   describe('background validation', () => {
     it('flags pure white as glare risk in light background (warning, not error)', () => {
       const white = new ChromaColor('#ffffff');

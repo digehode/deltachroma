@@ -19,6 +19,37 @@ function toByte(channel: number | null | undefined): number {
   return Math.round(normalized * 255);
 }
 
+// Pre-calculated 3x3 matrices for linear sRGB space.
+// Each row sums to 1, so achromatic colours are preserved.
+const PROTANOPIA_MATRIX = [
+  [0.56667, 0.43333, 0.0],
+  [0.55833, 0.44167, 0.0],
+  [0.0, 0.24167, 0.75833],
+];
+
+const DEUTERANOPIA_MATRIX = [
+  [0.36722, 0.86065, -0.22787],
+  [0.28008, 0.6725, 0.04742],
+  [-0.01183, 0.04042, 0.97141],
+];
+
+const TRITANOPIA_MATRIX = [
+  [0.95, 0.05, 0.0],
+  [0.0, 0.43333, 0.56667],
+  [0.0, 0.475, 0.525],
+];
+
+function applyMatrix3x3(
+  rgb: [number, number, number],
+  matrix: number[][],
+): [number, number, number] {
+  return [
+    rgb[0] * matrix[0][0] + rgb[1] * matrix[0][1] + rgb[2] * matrix[0][2],
+    rgb[0] * matrix[1][0] + rgb[1] * matrix[1][1] + rgb[2] * matrix[1][2],
+    rgb[0] * matrix[2][0] + rgb[1] * matrix[2][1] + rgb[2] * matrix[2][2],
+  ];
+}
+
 export interface ColorValidationResult {
   success: boolean;
   messages: string[];
@@ -120,6 +151,32 @@ export class ChromaColor {
   /** Create an independent clone of the current ChromaColor */
   clone(): ChromaColor {
     return ChromaColor.fromInternal(this._internal.clone());
+  }
+
+  /** Simulate protanopia (red-blindness) colour vision deficiency. */
+  protan(): ChromaColor {
+    return this.applyCVDMatrix(PROTANOPIA_MATRIX);
+  }
+
+  /** Simulate deuteranopia (green-blindness) colour vision deficiency. */
+  deutan(): ChromaColor {
+    return this.applyCVDMatrix(DEUTERANOPIA_MATRIX);
+  }
+
+  /** Simulate tritanopia (blue-blindness) colour vision deficiency. */
+  tritan(): ChromaColor {
+    return this.applyCVDMatrix(TRITANOPIA_MATRIX);
+  }
+
+  private applyCVDMatrix(matrix: number[][]): ChromaColor {
+    const linear = this._internal.to('srgb-linear');
+    const coords: [number, number, number] = [
+      linear.coords[0] ?? 0,
+      linear.coords[1] ?? 0,
+      linear.coords[2] ?? 0,
+    ];
+    const simulatedCoords = applyMatrix3x3(coords, matrix);
+    return ChromaColor.fromInternal(new Color('srgb-linear', simulatedCoords));
   }
 
   /**
