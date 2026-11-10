@@ -5,5 +5,7 @@ pre-commit:
       run: npx @biomejs/biome check --staged {staged_files}
     2-lint-docs:
       run: npm run lint:markdown
-    3-test:
+    3-typecheck:
+      run: npx tsc --noEmit      
+    4-test:
       run: npm run test

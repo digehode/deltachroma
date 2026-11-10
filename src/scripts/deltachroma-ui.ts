@@ -41,9 +41,9 @@ function updateColorCard(
 
     // Extract sRGB integer channels for standard rgb() string
     const rawRgb = color.raw.to('srgb');
-    const r = Math.round(Math.max(0, Math.min(1, rawRgb.coords[0])) * 255);
-    const g = Math.round(Math.max(0, Math.min(1, rawRgb.coords[1])) * 255);
-    const b = Math.round(Math.max(0, Math.min(1, rawRgb.coords[2])) * 255);
+    const r = Math.round(Math.max(0, Math.min(1, rawRgb.coords[0] ?? 0)) * 255);
+    const g = Math.round(Math.max(0, Math.min(1, rawRgb.coords[1] ?? 0)) * 255);
+    const b = Math.round(Math.max(0, Math.min(1, rawRgb.coords[2] ?? 0)) * 255);
     const rgbStr = `rgb(${r}, ${g}, ${b})`;
 
     // Apply updates to UI elements

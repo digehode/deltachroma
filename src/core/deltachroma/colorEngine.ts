@@ -52,7 +52,7 @@ export class ChromaColor {
     return [
       oklch.coords[0] || 0,
       oklch.coords[1] || 0,
-      Number.isNaN(oklch.coords[2]) ? 0 : oklch.coords[2],
+      Number.isNaN(oklch.coords[2]) ? 0 : (oklch.coords[2] ?? 0),
     ];
   }
 
