@@ -82,6 +82,30 @@ import '@/styles/deltachroma-app.css';
 
       </div>
     </section>
+
+    <!-- Seed Colours Section -->
+    <section class="deltachroma-section">
+      <h2>Seed Colours</h2>
+      <div class="grid-two-cols">
+        <!-- Light Seed Colours -->
+        <div class="color-control-box">
+          <h3>Light Seed Colours</h3>
+          <div id="light-seeds">
+            <!-- Seed inputs will be added dynamically -->
+          </div>
+          <button type="button" id="add-light-seed-btn" class="btn-secondary">+ Add Seed</button>
+        </div>
+
+        <!-- Dark Seed Colours -->
+        <div class="color-control-box">
+          <h3>Dark Seed Colours</h3>
+          <div id="dark-seeds">
+            <!-- Seed inputs will be added dynamically -->
+          </div>
+          <button type="button" id="add-dark-seed-btn" class="btn-secondary">+ Add Seed</button>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -92,4 +116,5 @@ import '@/styles/deltachroma-app.css';
 
   initColorisPicker();
   initDeltaChromaUI();
+  initSeedButtons(document);
 </script>

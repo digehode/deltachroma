@@ -94,6 +94,32 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   }
 }
 
+/** Add a seed entry to the specified container, inserting after the button */
+function addSeed(root: ParentNode, containerId: string): void {
+  const seedDiv = document.createElement('div');
+  seedDiv.className = 'seed-entry';
+  seedDiv.innerHTML = `
+    <span class="seed-hex"></span>
+    <button type="button" class="btn-delete-seed">×</button>
+  `;
+
+  const container = root.querySelector(`#${containerId}-seeds`) as HTMLElement;
+  const button = root.querySelector(`#add-${containerId}-seed-btn`) as HTMLButtonElement;
+  if (container && button) {
+    container.parentNode?.insertBefore(seedDiv, button.nextSibling);
+  }
+}
+
+/** Initialize seed button event listeners */
+function initSeedButtons(root: ParentNode): void {
+  ['light', 'dark'].forEach((mode) => {
+    const addBtn = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
+    if (addBtn) {
+      addBtn.addEventListener('click', () => addSeed(root, mode));
+    }
+  });
+}
+
 /**
  * Wire the light/dark background cards: attach listeners and render the
  * initial state. Scoped to `root` so it can be exercised in tests without a
@@ -111,4 +137,7 @@ export function initDeltaChromaUI(root: ParentNode = document): void {
     input.addEventListener('change', render);
     render();
   }
+
+  // Seed buttons
+  initSeedButtons(root);
 }
