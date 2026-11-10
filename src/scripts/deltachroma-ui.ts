@@ -118,6 +118,17 @@ function initSeedButtons(root: ParentNode): void {
       addBtn.addEventListener('click', () => addSeed(root, mode));
     }
   });
+
+  // Delete button handlers: remove seed entry on click
+  root.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('btn-delete-seed')) {
+      const seedEntry = target.closest('.seed-entry');
+      if (seedEntry) {
+        seedEntry.remove();
+      }
+    }
+  });
 }
 
 /**
