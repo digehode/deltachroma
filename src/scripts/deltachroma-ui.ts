@@ -4,6 +4,7 @@ import '@melloware/coloris/dist/coloris.css';
 
 interface ColorCardRefs {
   inputId: string;
+  mode: 'light' | 'dark';
   swatchId: string;
   hexId: string;
   rgbId: string;
@@ -14,6 +15,7 @@ interface ColorCardRefs {
 const COLOR_CARDS: readonly ColorCardRefs[] = [
   {
     inputId: 'light-bg-input',
+    mode: 'light',
     swatchId: 'light-swatch',
     hexId: 'light-hex',
     rgbId: 'light-rgb',
@@ -22,6 +24,7 @@ const COLOR_CARDS: readonly ColorCardRefs[] = [
   },
   {
     inputId: 'dark-bg-input',
+    mode: 'dark',
     swatchId: 'dark-swatch',
     hexId: 'dark-hex',
     rgbId: 'dark-rgb',
@@ -66,14 +69,8 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   oklch.textContent = color.toCss('oklch', 2);
 
   // Run background validation
-  const isLight = card.inputId.includes('light');
-  let validationResult: { success: boolean; messages: string[] };
-
-  if (isLight) {
-    validationResult = color.validateLightBackground();
-  } else {
-    validationResult = color.validateDarkBackground();
-  }
+  const validationResult: { success: boolean; messages: string[] } =
+    card.mode === 'light' ? color.validateLightBackground() : color.validateDarkBackground();
 
   // Clear previous validation results
   validationDiv.innerHTML = '';
@@ -118,6 +115,13 @@ function initSeedButtons(root: ParentNode): void {
   });
 }
 
+/** Generate a random hex colour string for default seed entries. */
+function randomHex(): string {
+  return `#${Math.floor(Math.random() * 16777215)
+    .toString(16)
+    .padStart(6, '0')}`;
+}
+
 /** Create a new seed entry with colour picker and displays */
 function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
   const seedDiv = document.createElement('div');
@@ -127,7 +131,7 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
       type="text"
       class="coloris-input"
       data-coloris
-      value="#ffffff"
+      value="${randomHex()}"
     />
     <div class="seed-colour-displays">
       <span class="seed-hex-display"></span>
