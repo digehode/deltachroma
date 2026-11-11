@@ -99,6 +99,19 @@ import '@/styles/deltachroma-app.css';
           />
           <span id="palette-size-value" class="parameter-value">7</span>
         </div>
+        <div class="parameter-row">
+          <label for="delta-e-threshold-input">Delta E similarity threshold:</label>
+          <input
+            type="range"
+            id="delta-e-threshold-input"
+            min="0.00"
+            max="0.15"
+            step="0.005"
+            value="0.05"
+            class="parameter-slider"
+          />
+          <span id="delta-e-threshold-value" class="parameter-value">0.05</span>
+        </div>
       </div>
       <p class="parameter-note">Number of colours in the generated palette. Locked seeds act as fixed anchor points.</p>
     </section>

@@ -8,6 +8,18 @@
   width: 100%;
 }
 
+/* Make the tool page wider than other pages */
+.deltachroma-app .card-panel {
+  max-width: min(1600px, 100%);
+  padding: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .deltachroma-app .card-panel {
+    padding: 2rem;
+  }
+}
+
 .deltachroma-section {
   width: 100%;
 }
@@ -408,6 +420,12 @@ div.color-control-box div.clr-field button {
 
 .delta-e-cell-high {
   color: var(--color-red);
+}
+
+/* Delta E cell flagged as too similar (below user threshold) */
+.delta-e-cell-too-similar {
+  color: var(--color-muted);
+  font-style: italic;
 }
 
 /* Table cell background colour swatches */

@@ -138,6 +138,7 @@ function randomHex(): string {
 let lightPalette: ChromaColor[] = [];
 let darkPalette: ChromaColor[] = [];
 let paletteSize = 7;
+let deltaEThreshold = 0.05;
 let lightSeedCount = 0;
 let darkSeedCount = 0;
 
@@ -203,6 +204,7 @@ function renderDeltaETable(
       const deltaE = transformed[i].deltaE(transformed[j]);
       cell.textContent = deltaE.toFixed(1);
       if (i === j) cell.classList.add('delta-e-cell-zero');
+      else if (deltaE < deltaEThreshold) cell.classList.add('delta-e-cell-too-similar');
       else if (deltaE < 3) cell.classList.add('delta-e-cell-low');
       else if (deltaE < 7.5) cell.classList.add('delta-e-cell-mid');
       else cell.classList.add('delta-e-cell-high');
@@ -485,6 +487,22 @@ export function initDeltaChromaUI(root: ParentNode = document): void {
     paletteSizeInput.addEventListener('input', updatePaletteSize);
     paletteSizeInput.addEventListener('change', updatePaletteSize);
     updatePaletteSize();
+  }
+
+  // Delta E threshold slider
+  const deltaEThresholdInput = root.querySelector('#delta-e-threshold-input') as HTMLInputElement;
+  const deltaEThresholdValue = root.querySelector('#delta-e-threshold-value') as HTMLElement;
+
+  const updateDeltaEThreshold = () => {
+    deltaEThreshold = Math.max(0, Math.min(0.15, Number(deltaEThresholdInput.value)));
+    if (deltaEThresholdValue) deltaEThresholdValue.textContent = deltaEThreshold.toFixed(3);
+    renderPaletteOutputs(root);
+  };
+
+  if (deltaEThresholdInput) {
+    deltaEThresholdInput.addEventListener('input', updateDeltaEThreshold);
+    deltaEThresholdInput.addEventListener('change', updateDeltaEThreshold);
+    updateDeltaEThreshold();
   }
 
   // Render initial palette outputs

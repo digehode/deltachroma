@@ -236,7 +236,7 @@ a:hover {
 /* Main layout container ensuring a readable central column layout */
 .container {
   width: 100%;
-  max-width: 80rem; /* ~1280px */
+  max-width: 80rem;
   margin-left: auto;
   margin-right: auto;
   padding-left: 1.5rem;
@@ -245,7 +245,7 @@ a:hover {
 
 main {
   flex: 1;
-  max-width: 1200px;
+  max-width: 1600px;
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1rem;
@@ -404,6 +404,12 @@ svg {
 /* ==========================================================================
   TOC and Blog sidebar
    ========================================================================== */
+.blog-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0rem 6rem;
+}
 
 .toc-top-link {
   font-weight: 500;
