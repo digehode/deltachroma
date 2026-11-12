@@ -148,6 +148,11 @@ export class ChromaColor {
     return ChromaColor.fromInternal(cloned);
   }
 
+  /** Create a ChromaColor from OKLCH coordinates [L, C, H]. */
+  static fromOkLCH(l: number, c: number, h: number): ChromaColor {
+    return ChromaColor.fromInternal(new Color('oklch', [l, c, h]));
+  }
+
   /** Create an independent clone of the current ChromaColor */
   clone(): ChromaColor {
     return ChromaColor.fromInternal(this._internal.clone());

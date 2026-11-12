@@ -1,5 +1,7 @@
 import { ChromaColor } from '@/core/deltachroma';
-import { refreshColoris } from './coloris-picker';
+import { MAX_PALETTE_SIZE, MIN_PALETTE_SIZE, PaletteState } from './palette-state';
+import type { SeedMode } from './seed-entry';
+import { randomHex, SeedEntry } from './seed-entry';
 import '@melloware/coloris/dist/coloris.css';
 
 interface ColorCardRefs {
@@ -93,65 +95,6 @@ function renderColorCard(root: ParentNode, card: ColorCardRefs): void {
   }
 }
 
-/** Initialize seed button event listeners */
-function initSeedButtons(root: ParentNode): void {
-  const modes = ['light', 'dark'] as const;
-  modes.forEach((mode) => {
-    const addBtn = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
-    if (addBtn) {
-      addBtn.addEventListener('click', () => createSeedEntry(root, mode));
-    }
-  });
-
-  // Delete button handlers: use event delegation on `root` because delete buttons
-  // are added dynamically inside seed entries after init. Direct listeners would
-  // miss them; add buttons above use direct listeners because they exist at init.
-  root.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains('btn-delete-seed')) {
-      const seedEntry = target.closest('.seed-entry');
-      if (seedEntry) {
-        const entry = seedEntry as HTMLElement;
-        const index = Number(entry.dataset.seedIndex);
-        const mode = entry.dataset.mode as 'light' | 'dark';
-        if (mode === 'light' && index < lightPalette.length) {
-          lightPalette[index] = new ChromaColor('#ffffff');
-          renderPaletteOutputs(root);
-        } else if (mode === 'dark' && index < darkPalette.length) {
-          darkPalette[index] = new ChromaColor('#ffffff');
-          renderPaletteOutputs(root);
-        }
-        seedEntry.remove();
-      }
-    }
-  });
-}
-
-/** Generate a random hex colour string for default seed entries. */
-function randomHex(): string {
-  return `#${Math.floor(Math.random() * 16777215)
-    .toString(16)
-    .padStart(6, '0')}`;
-}
-
-/** Palette state: one array per mode, sized to paletteSize, default white. */
-let lightPalette: ChromaColor[] = [];
-let darkPalette: ChromaColor[] = [];
-let paletteSize = 7;
-let deltaEThreshold = 0.05;
-let lightSeedCount = 0;
-let darkSeedCount = 0;
-
-/** Initialise both palettes to the given size, filled with white. */
-function initPalettes(size: number): void {
-  const white = new ChromaColor('#ffffff');
-  lightPalette = Array.from({ length: size }, () => white.clone());
-  darkPalette = Array.from({ length: size }, () => white.clone());
-  lightSeedCount = 0;
-  darkSeedCount = 0;
-}
-
-/** Render paint swatches and delta E table for one mode. */
 /** Vision types for Delta E comparison, in display order. */
 const VISION_TYPES: readonly { label: string; transform: (c: ChromaColor) => ChromaColor }[] = [
   { label: 'Normal vision', transform: (c) => c },
@@ -163,8 +106,9 @@ const VISION_TYPES: readonly { label: string; transform: (c: ChromaColor) => Chr
 /** Render a single Delta E matrix table for a given palette and vision type. */
 function renderDeltaETable(
   container: HTMLElement,
-  palette: ChromaColor[],
+  palette: readonly ChromaColor[],
   vision: { label: string; transform: (c: ChromaColor) => ChromaColor },
+  threshold: number,
 ): void {
   const section = document.createElement('div');
   section.className = 'vision-section';
@@ -204,7 +148,7 @@ function renderDeltaETable(
       const deltaE = transformed[i].deltaE(transformed[j]);
       cell.textContent = deltaE.toFixed(1);
       if (i === j) cell.classList.add('delta-e-cell-zero');
-      else if (deltaE < deltaEThreshold) cell.classList.add('delta-e-cell-too-similar');
+      else if (deltaE < threshold) cell.classList.add('delta-e-cell-too-similar');
       else if (deltaE < 3) cell.classList.add('delta-e-cell-low');
       else if (deltaE < 7.5) cell.classList.add('delta-e-cell-mid');
       else cell.classList.add('delta-e-cell-high');
@@ -218,10 +162,12 @@ function renderDeltaETable(
 }
 
 /** Render paint swatches and delta E tables for one mode, across all vision types. */
-function renderPaletteSide(root: ParentNode, mode: 'light' | 'dark', palette: ChromaColor[]): void {
+function renderPaletteSide(root: ParentNode, mode: 'light' | 'dark', state: PaletteState): void {
   const swatchesContainer = root.querySelector(`#${mode}-palette-swatches`) as HTMLElement;
   const tableContainer = root.querySelector(`#${mode}-palette-table-container`) as HTMLElement;
   if (!swatchesContainer || !tableContainer) return;
+
+  const palette = state.getPalette(mode);
 
   // --- Paint swatches (always show base colours) ---
   swatchesContainer.innerHTML = '';
@@ -251,206 +197,14 @@ function renderPaletteSide(root: ParentNode, mode: 'light' | 'dark', palette: Ch
   // --- Delta E tables for each vision type ---
   tableContainer.innerHTML = '';
   for (const vision of VISION_TYPES) {
-    renderDeltaETable(tableContainer, palette, vision);
+    renderDeltaETable(tableContainer, palette, vision, state.deltaEThreshold);
   }
 }
 
 /** Render both palette outputs. */
-function renderPaletteOutputs(root: ParentNode): void {
-  renderPaletteSide(root, 'light', lightPalette);
-  renderPaletteSide(root, 'dark', darkPalette);
-}
-
-/** Create a new seed entry with colour picker and displays */
-function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
-  const seedIndex = mode === 'light' ? lightSeedCount++ : darkSeedCount++;
-  const seedDiv = document.createElement('div');
-  seedDiv.className = 'seed-entry';
-  seedDiv.dataset.seedIndex = String(seedIndex);
-  seedDiv.dataset.mode = mode;
-  seedDiv.innerHTML = `
-    <div class="seed-row1">
-      <div class="seed-picker-wrapper">
-        <input
-          type="text"
-          class="coloris-input"
-          data-coloris
-          value="${randomHex()}"
-        />
-      </div>
-      <button type="button" class="btn-delete-seed">×</button>
-    </div>
-    <div class="seed-row2">
-      <div class="seed-swatch-container">
-        <div class="seed-bg-swatch"></div>
-        <div class="seed-fg-swatch"></div>
-      </div>
-      <div class="seed-contrast-group"></div>
-    </div>
-    <div class="seed-row3">
-      <span class="seed-rgb-display"></span>
-      <span class="seed-oklch-display"></span>
-      <label class="seed-lock">
-        <input type="checkbox" class="seed-lock-toggle" />
-        Lock
-      </label>
-    </div>
-  </div>
-`;
-
-  const container = root.querySelector(`#${mode}-seeds`) as HTMLElement;
-  const button = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
-  if (container && button) {
-    container.parentNode?.insertBefore(seedDiv, button.nextSibling);
-  }
-
-  // Attach Coloris to the new colour input
-  refreshColoris();
-
-  // Set the mode background colour on the layered swatch container
-  const bgInput = root.querySelector(`#${mode}-bg-input`) as HTMLInputElement;
-  const bgColour = bgInput ? bgInput.value : '#ffffff';
-  const swatchContainer = seedDiv.querySelector('.seed-swatch-container') as HTMLElement;
-  if (swatchContainer) swatchContainer.style.backgroundColor = bgColour;
-
-  // Update colour displays (rgb/oklch)
-  const updateSeedDisplay = () => {
-    const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
-    try {
-      const color = new ChromaColor(colourInput.value);
-      const rgbDisplay = seedDiv.querySelector('.seed-rgb-display') as HTMLElement;
-      const oklchDisplay = seedDiv.querySelector('.seed-oklch-display') as HTMLElement;
-      if (rgbDisplay) rgbDisplay.textContent = color.toCss('rgb');
-      if (oklchDisplay) oklchDisplay.textContent = color.toCss('oklch', 2);
-    } catch {
-      // Invalid colour value - leave displays empty
-    }
-  };
-
-  // Update swatch and contrast message whenever seed or background changes
-  const updateSeedContrast = () => {
-    const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
-    const currentBgInput = root.querySelector(`#${mode}-bg-input`) as HTMLInputElement;
-    try {
-      const seedColor = new ChromaColor(colourInput.value);
-      const bgColor = new ChromaColor(currentBgInput ? currentBgInput.value : '#ffffff');
-
-      // Update swatch container background to match current mode background
-      if (swatchContainer) swatchContainer.style.backgroundColor = bgColor.toCss('hex');
-
-      // Update fg swatch to show seed colour
-      const fgSwatch = seedDiv.querySelector('.seed-fg-swatch') as HTMLElement;
-      if (fgSwatch) fgSwatch.style.backgroundColor = seedColor.toCss('hex');
-
-      // Calculate contrasts for normal vision and all CVD types
-      // CVD simulation applies the matrix to BOTH seed and background colours
-      const contrasts = [
-        { label: 'Normal', colorA: seedColor, colorB: bgColor },
-        { label: 'Protanomaly', colorA: seedColor.protan(), colorB: bgColor.protan() },
-        { label: 'Deuteranomaly', colorA: seedColor.deutan(), colorB: bgColor.deutan() },
-        { label: 'Tritanomaly', colorA: seedColor.tritan(), colorB: bgColor.tritan() },
-      ];
-
-      const contrastGroup = seedDiv.querySelector('.seed-contrast-group') as HTMLElement;
-      if (!contrastGroup) return;
-
-      contrastGroup.innerHTML = '';
-
-      contrasts.forEach(({ label, colorA, colorB }) => {
-        const ratio = colorA.contrast(colorB);
-        const ratioFormatted = ratio.toFixed(1);
-
-        const item = document.createElement('div');
-        item.className = 'seed-contrast-item';
-
-        const labelSpan = document.createElement('span');
-        labelSpan.className = 'seed-contrast-label';
-        labelSpan.textContent = label;
-
-        const valueSpan = document.createElement('span');
-        valueSpan.className = 'seed-contrast-value';
-        valueSpan.textContent = `${ratioFormatted}:1`;
-
-        const statusSpan = document.createElement('span');
-        statusSpan.className = 'seed-contrast-status';
-
-        if (ratio < 3) {
-          statusSpan.classList.add('fg-red');
-          statusSpan.textContent = 'fails WCAG';
-        } else if (ratio < 4.5) {
-          statusSpan.classList.add('fg-amber');
-          statusSpan.textContent = 'large text only';
-        } else {
-          statusSpan.classList.add('fg-green');
-          statusSpan.textContent = 'meets WCAG';
-        }
-
-        item.appendChild(labelSpan);
-        item.appendChild(valueSpan);
-        item.appendChild(statusSpan);
-        contrastGroup.appendChild(item);
-      });
-    } catch {
-      // Invalid colour - leave contrast message empty
-      const contrastGroup = seedDiv.querySelector('.seed-contrast-group') as HTMLElement;
-      if (contrastGroup) contrastGroup.innerHTML = '';
-    }
-  };
-
-  // Initial display and contrast
-  updateSeedDisplay();
-  updateSeedContrast();
-
-  // Initialise palette slot if within range
-  if (seedIndex < paletteSize) {
-    try {
-      const color = new ChromaColor(
-        (seedDiv.querySelector('.coloris-input') as HTMLInputElement).value,
-      );
-      if (mode === 'light') lightPalette[seedIndex] = color;
-      else darkPalette[seedIndex] = color;
-    } catch {
-      // Invalid colour - leave palette as white
-    }
-  }
-
-  // Render palette outputs after all seeds are initialised
-  renderPaletteOutputs(root);
-
-  // Update on seed colour change
-  const colourInput = seedDiv.querySelector('.coloris-input') as HTMLInputElement;
-  if (colourInput) {
-    colourInput.addEventListener('input', () => {
-      updateSeedDisplay();
-      updateSeedContrast();
-
-      // Update palette slot if within range
-      if (seedIndex < paletteSize) {
-        try {
-          const color = new ChromaColor(colourInput.value);
-          if (mode === 'light') lightPalette[seedIndex] = color;
-          else darkPalette[seedIndex] = color;
-          renderPaletteOutputs(root);
-        } catch {
-          // Invalid colour - leave palette unchanged
-        }
-      }
-    });
-
-    // Update contrast when background changes too
-    if (bgInput) {
-      bgInput.addEventListener('input', updateSeedContrast);
-    }
-
-    // Lock toggle: track locked state on the seed entry
-    const lockToggle = seedDiv.querySelector('.seed-lock-toggle') as HTMLInputElement;
-    if (lockToggle) {
-      lockToggle.addEventListener('change', (e) => {
-        const isLocked = (e.target as HTMLInputElement).checked;
-        seedDiv.classList.toggle('seed-locked', isLocked);
-      });
-    }
-  }
+function renderPaletteOutputs(root: ParentNode, state: PaletteState): void {
+  renderPaletteSide(root, 'light', state);
+  renderPaletteSide(root, 'dark', state);
 }
 
 /**
@@ -459,28 +213,21 @@ function createSeedEntry(root: ParentNode, mode: 'light' | 'dark'): void {
  * real document.
  */
 export function initDeltaChromaUI(root: ParentNode = document): void {
+  const state = new PaletteState();
+  const seedEntries: SeedEntry[] = [];
+
+  const onSeedChange = () => renderPaletteOutputs(root, state);
+
   // Palette size slider
   const paletteSizeInput = root.querySelector('#palette-size-input') as HTMLInputElement;
   const paletteSizeValue = root.querySelector('#palette-size-value') as HTMLElement;
 
-  // Initialise palettes to white
-  initPalettes(paletteSize);
-
   const updatePaletteSize = () => {
-    paletteSize = Math.max(3, Math.min(12, Number(paletteSizeInput.value)));
-    if (paletteSizeValue) paletteSizeValue.textContent = String(paletteSize);
-
-    // Re-init palettes to new size, preserving existing colours that fit
-    const white = new ChromaColor('#ffffff');
-    const oldLight = lightPalette;
-    const oldDark = darkPalette;
-    lightPalette = Array.from({ length: paletteSize }, (_, _index) =>
-      _index < oldLight.length ? oldLight[_index].clone() : white.clone(),
+    state.setSize(
+      Math.max(MIN_PALETTE_SIZE, Math.min(MAX_PALETTE_SIZE, Number(paletteSizeInput.value))),
     );
-    darkPalette = Array.from({ length: paletteSize }, (_, _index) =>
-      _index < oldDark.length ? oldDark[_index].clone() : white.clone(),
-    );
-    renderPaletteOutputs(root);
+    if (paletteSizeValue) paletteSizeValue.textContent = String(state.size);
+    renderPaletteOutputs(root, state);
   };
 
   if (paletteSizeInput) {
@@ -494,9 +241,9 @@ export function initDeltaChromaUI(root: ParentNode = document): void {
   const deltaEThresholdValue = root.querySelector('#delta-e-threshold-value') as HTMLElement;
 
   const updateDeltaEThreshold = () => {
-    deltaEThreshold = Math.max(0, Math.min(0.15, Number(deltaEThresholdInput.value)));
-    if (deltaEThresholdValue) deltaEThresholdValue.textContent = deltaEThreshold.toFixed(3);
-    renderPaletteOutputs(root);
+    state.setThreshold(Number(deltaEThresholdInput.value));
+    if (deltaEThresholdValue) deltaEThresholdValue.textContent = state.deltaEThreshold.toFixed(3);
+    renderPaletteOutputs(root, state);
   };
 
   if (deltaEThresholdInput) {
@@ -505,8 +252,54 @@ export function initDeltaChromaUI(root: ParentNode = document): void {
     updateDeltaEThreshold();
   }
 
+  // Seed buttons
+  const seedCounts: { light: number; dark: number } = { light: 0, dark: 0 };
+  ['light', 'dark'].forEach((mode) => {
+    const addBtn = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const index = seedCounts[mode as SeedMode];
+        if (index >= state.size) return;
+        const randomColor = new ChromaColor(randomHex());
+        state.setSeed(mode as SeedMode, index, randomColor);
+        const entry = new SeedEntry(root, mode as SeedMode, index, state, onSeedChange);
+        const container = root.querySelector(`#${mode}-seeds`) as HTMLElement;
+        const button = root.querySelector(`#add-${mode}-seed-btn`) as HTMLButtonElement;
+        if (container && button) {
+          container.parentNode?.insertBefore(entry.element, button.nextSibling);
+        }
+        seedEntries.push(entry);
+        seedCounts[mode as SeedMode] = index + 1;
+      });
+    }
+  });
+
+  // Generate palette button
+  const generateBtn = root.querySelector('#generate-palette-btn') as HTMLButtonElement;
+  if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+      state.generatePalettes();
+      renderPaletteOutputs(root, state);
+    });
+  }
+
+  // Background input listeners - wired once, not per seed
+  ['light', 'dark'].forEach((mode) => {
+    const bgInput = root.querySelector(`#${mode}-bg-input`) as HTMLInputElement;
+    if (bgInput) {
+      bgInput.addEventListener('input', () => {
+        seedEntries
+          .filter((e) => e.mode === mode)
+          .forEach((e) => {
+            e.updateFromBackground();
+          });
+        renderPaletteOutputs(root, state);
+      });
+    }
+  });
+
   // Render initial palette outputs
-  renderPaletteOutputs(root);
+  renderPaletteOutputs(root, state);
 
   for (const card of COLOR_CARDS) {
     const input = root.querySelector(`#${card.inputId}`);
@@ -519,10 +312,4 @@ export function initDeltaChromaUI(root: ParentNode = document): void {
     input.addEventListener('change', render);
     render();
   }
-
-  // Seed buttons
-  initSeedButtons(root);
-
-  // Render initial palette outputs
-  renderPaletteOutputs(root);
 }
